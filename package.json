@@ -4,9 +4,7 @@
   "description": "Api para prestashop",
   "main": "index.js",
   "scripts": {
-    "dev": "node --env-file .env --watch src/app.js",
-    "build": "npx babel src --out-dir dist",
-    "start": "node src/app.js"
+    "dev": "node --env-file .env --watch src/app.js"
   },
   "keywords": [
     "prestashop"
