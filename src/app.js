@@ -8,8 +8,13 @@ const authRoutes = require('./routes/auth');
 
 app.use(express.json());
 
+const corsOptions = {
+    origin: ['http://localhost:5173', 'https://torreblanca-front.vercel.app/'],
+    optionsSuccessStatus: 200
+};
+
 //autorizar cors
-app.use(cors());
+app.use(cors(corsOptions));
 
 // const categoryRoutes = require('./routes/categories');
 
