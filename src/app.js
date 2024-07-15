@@ -9,9 +9,7 @@ const authRoutes = require('./routes/auth');
 app.use(express.json());
 
 //autorizar cors
-app.use(cors({
-    origin: ['http://localhost:5173', 'https://torreblanca-front.vercel.app/']
-}));
+app.use(cors());
 
 // const categoryRoutes = require('./routes/categories');
 

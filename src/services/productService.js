@@ -7,29 +7,26 @@ const { connect } = require('../controllers/prestashopConector');
 exports.getProductsBySeller = async (id) => {
     const query = `
     SELECT 
-    p.id_product, 
-    pl.name AS product_name, 
-    p.price AS "precio sin IVA", 
+    p.id_product,
+    pl.name AS product_name,
+    p.price,
     p.price * (1 + (t.rate / 100)) AS "precio_IVA", 
-    s.id_seller, 
-    ps.active AS is_active
+    p.quantity,
+    p.active,
+    t.rate AS tax_rate
 FROM 
     ps_product p
 INNER JOIN 
     ps_product_lang pl ON p.id_product = pl.id_product
 INNER JOIN 
     ps_seller_product sp ON p.id_product = sp.id_product
-INNER JOIN 
-    ps_seller s ON sp.id_seller = s.id_seller
-INNER JOIN 
-    ps_product_shop ps ON p.id_product = ps.id_product
 LEFT JOIN 
-    ps_tax_rule tr ON p.id_tax_rules_group = tr.id_tax_rules_group
-LEFT JOIN 
-    ps_tax t ON tr.id_tax = t.id_tax
+    ps_tax t ON p.id_tax_rules_group = t.id_tax
 WHERE 
-    pl.id_lang = 1
-    AND s.id_seller = ?
+    sp.id_seller = ?
+    AND pl.id_lang = 1 
+ORDER BY 
+    p.id_product;
     `;
     return await connect(query, id);
 };

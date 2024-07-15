@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { updateProductPrice } = require('../services/productService');
+const { updateProductPrice, getProductsBySeller } = require('../services/productService');
 
 const verifyToken = require('../middleware/middleware');
 
