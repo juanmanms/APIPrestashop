@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { updateProductPrice, getProductsBySeller } = require('../services/productService');
+const { updateProductPrice, getProductsBySeller, updateProductIVA, getCombinations, activeProduct, updateProductName } = require('../services/productService');
 
 const verifyToken = require('../middleware/middleware');
 
@@ -20,16 +20,44 @@ router.use((req, res, next) => {
 
 router.get('/', async (req, res) => {
     const id = getIdFromToken(req);
-    console.log(id);
+    console.log("vendedor", id);
     const sellerProducts = await getProductsBySeller(id);
     res.json(sellerProducts);
 });
 
 router.put('/', async (req, res) => {
     const { id, price } = req.body;
-    console.log(id, price);
+    console.log("Producto ", id, "precio ", price);
     await updateProductPrice(id, price);
-    res.json({ message: 'Product updated' });
+    res.json({ message: 'Product price updated' });
+});
+
+router.put('/iva', async (req, res) => {
+    const { id, iva } = req.body;
+    console.log("Producto ", id, "IVA ", iva);
+    await updateProductIVA(id, iva);
+    res.json({ message: 'IVA updated' });
+});
+
+router.get('/combinations', async (req, res) => {
+    const id = getIdFromToken(req);
+    console.log("combinaciones", id);
+    const sellerProducts = await getCombinations(id);
+    res.json(sellerProducts);
+});
+
+router.put('/active', async (req, res) => {
+    const { id, active } = req.body;
+    console.log("Producto ", id, "activo ", active);
+    await activeProduct(id, active);
+    res.json({ message: 'Product active updated' });
+});
+
+router.put('/name', async (req, res) => {
+    const { id, name } = req.body;
+    console.log("Producto ", id, "nombre ", name);
+    await updateProductName(id, name);
+    res.json({ message: 'Product name updated' });
 });
 
 module.exports = router;

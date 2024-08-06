@@ -2,12 +2,9 @@
 const productService = require('../services/productService');
 
 exports.getProductsBySeller = async (req, res) => {
-    try {
-        const products = await productService.getProductsBySeller();
-        res.json(products);
-    } catch (error) {
-        res.status(500).send('Server error');
-    }
+    const sellerId = req.userId; // Accede al ID del usuario directamente
+    const sellerProducts = await getProductsBySeller(sellerId);
+    res.json(sellerProducts);
 };
 
 exports.updateProductPrice = async (req, res) => {
