@@ -44,7 +44,7 @@ LEFT JOIN
     ps_tax t ON p.id_tax_rules_group = t.id_tax
 WHERE 
     sp.id_seller = ?
-    AND pl.id_lang = 1 
+    AND pl.id_lang = 2
 ORDER BY 
     p.id_product;
 `;
@@ -69,7 +69,7 @@ INNER JOIN
     ps_seller_product sp ON p.id_product = sp.id_product
 WHERE
     sp.id_seller = ?
-    AND pl.id_lang = 1
+    AND pl.id_lang = 2
     AND p.active = ?
 ORDER BY
     p.id_product;

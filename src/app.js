@@ -5,6 +5,7 @@ const cors = require('cors');
 const productRoutes = require('./routes/products');
 const sellerRoutes = require('./routes/sellers');
 const authRoutes = require('./routes/auth');
+const attributeRoutes = require('./routes/attributes');
 
 app.use(express.json());
 
@@ -19,6 +20,7 @@ app.use(cors(corsOptions));
 // const categoryRoutes = require('./routes/categories');
 
 app.use('/products', productRoutes);
+app.use('/attributes', attributeRoutes);
 app.use('/sellers', sellerRoutes);
 app.use('/auth', authRoutes);
 // app.use('/categories', categoryRoutes);

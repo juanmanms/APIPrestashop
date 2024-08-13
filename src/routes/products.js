@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { updateProductPrice, getProductsBySeller, updateProductIVA, getCombinations, activeProduct, updateProductName } = require('../services/productService');
+const { updateProductPrice, getProductsBySeller, updateProductIVA, getCombinations, activeProduct, updateProductName, getProductsNoCombinations } = require('../services/productService');
 
 const verifyToken = require('../middleware/middleware');
 
@@ -21,7 +21,7 @@ router.use((req, res, next) => {
 router.get('/', async (req, res) => {
     const id = getIdFromToken(req);
     console.log("vendedor", id);
-    const sellerProducts = await getProductsBySeller(id);
+    const sellerProducts = await getProductsNoCombinations(id);
     res.json(sellerProducts);
 });
 
