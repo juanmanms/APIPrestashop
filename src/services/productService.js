@@ -76,7 +76,7 @@ exports.getCombinations = async (id) => {
     SELECT DISTINCT p.id_product,
                 pl.name AS product_name,
                 a.id_attribute,
-                GROUP_CONCAT(DISTINCT al.name ORDER BY al.name ASC SEPARATOR ', ') AS attribute_names,
+                al.name AS attribute_names,
                 pa.price AS combination_price,
                 t.rate AS tax_rate,
                 (pa.price * (1 + t.rate / 100)) AS price_with_tax,
@@ -94,7 +94,6 @@ INNER JOIN ps_tax_rule tr ON ps.id_tax_rules_group = tr.id_tax_rules_group
 INNER JOIN ps_tax t ON tr.id_tax = t.id_tax
 WHERE pl.id_lang = 2
   AND s.id_customer = ?
-GROUP BY p.id_product, pl.name, pa.price, t.rate
 ORDER BY p.id_product
     `;
     return await connect(query, [id]);
