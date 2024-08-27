@@ -248,7 +248,7 @@ updateProductPriceCombination = async (id) => {
     UPDATE 
     ps_product 
 SET
-    price = ?
+    price = 0.00
 WHERE
     id_product = ?
     `;

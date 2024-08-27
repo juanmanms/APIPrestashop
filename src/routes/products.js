@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { updateProductPrice, getProductsBySeller, updateProductIVA, getCombinations, activeProduct, updateProductName, getProductsNoCombinations, createCombination } = require('../services/productService');
+const { updateProductPrice, getProductsBySeller, updateProductIVA, getCombinations, activeProduct, updateProductName, getProductsNoCombinations, createCombination, updateCombinationPrice } = require('../services/productService');
 
 const verifyToken = require('../middleware/middleware');
 
@@ -73,6 +73,22 @@ router.post('/combinations/create', async (req, res) => {
             res.status(500).json({ message: 'Internal server error' });
         }
     }
+});
+
+router.put('/combinations/price', async (req, res) => {
+    const { id, price } = req.body;
+    console.log("Combinacion ", id, "precio ", price);
+    try {
+        await updateCombinationPrice(id, price);
+        res.json({ message: 'Combination price updated' });
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+router.get('/combinations/active', async (req, res) => {
+    const { id, active } = req.body;
+    console.log("Combinacion ", id, "activo ", active);
 });
 
 
