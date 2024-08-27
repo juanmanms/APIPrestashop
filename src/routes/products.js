@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { updateProductPrice, getProductsBySeller, updateProductIVA, getCombinations, activeProduct, updateProductName, getProductsNoCombinations } = require('../services/productService');
+const { updateProductPrice, getProductsBySeller, updateProductIVA, getCombinations, activeProduct, updateProductName, getProductsNoCombinations, createCombination } = require('../services/productService');
 
 const verifyToken = require('../middleware/middleware');
 
@@ -59,5 +59,21 @@ router.put('/name', async (req, res) => {
     await updateProductName(id, name);
     res.json({ message: 'Product name updated' });
 });
+
+router.post('/combinations/create', async (req, res) => {
+    const { id, atributo } = req.body;
+    try {
+        const combination = await createCombination(id, atributo);
+        console.log("combinacion", combination);
+        res.json({ message: 'Combination created', combination });
+    } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            res.status(409).json({ message: 'Duplicate entry for key product_default' });
+        } else {
+            res.status(500).json({ message: 'Internal server error' });
+        }
+    }
+});
+
 
 module.exports = router;

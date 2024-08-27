@@ -1,9 +1,6 @@
 //usar connect de prestashopConector.js
-const { query } = require('express');
-const { connect } = require('../controllers/prestashopConector');
-
-
-
+const { query } = require("express");
+const { connect } = require("../controllers/prestashopConector");
 
 exports.getProductsBySeller = async (id) => {
     const query = `
@@ -69,7 +66,7 @@ WHERE
     id_product = ?
     `;
     return await connect(query, [iva, id]);
-}
+};
 
 exports.getCombinations = async (id) => {
     const query = `
@@ -80,7 +77,8 @@ exports.getCombinations = async (id) => {
                 pa.price AS combination_price,
                 t.rate AS tax_rate,
                 (pa.price * (1 + t.rate / 100)) AS price_with_tax,
-                p.active
+                p.active,
+                pa.id_product_attribute
 FROM ps_product p
 INNER JOIN ps_product_attribute pa ON p.id_product = pa.id_product
 INNER JOIN ps_product_lang pl ON p.id_product = pl.id_product
@@ -97,7 +95,7 @@ WHERE pl.id_lang = 2
 ORDER BY p.id_product
     `;
     return await connect(query, [id]);
-}
+};
 
 exports.activeProduct = async (id, active) => {
     const query = `
@@ -118,7 +116,7 @@ WHERE
     `;
     await connect(queryShop, [active, id]);
     return await connect(query, [active, id]);
-}
+};
 
 exports.updateProductName = async (id, name) => {
     const query = `
@@ -130,7 +128,7 @@ WHERE
     id_product = ?
     `;
     return await connect(query, [name, id]);
-}
+};
 
 exports.getProductsNoCombinations = async (id) => {
     const query = `
@@ -170,8 +168,121 @@ ORDER BY
 
     `;
     return await connect(query, [id, id]);
-}
+};
 
+exports.createCombination = async (id, atributo) => {
+    const insertQuery = `
+    INSERT INTO ps_product_attribute (
+        id_product, 
+        price, 
+        weight, 
+        available_date, 
+        reference, 
+        ean13, 
+        upc, 
+        wholesale_price
+    ) VALUES (
+        ?, 0.00, 0.00, '0000-00-00', '', '', '', 0.00
+    );
+    `;
 
+    const selectQuery = `SELECT LAST_INSERT_ID() AS id_product_attribute;`;
 
+    try {
+        // Iniciar una transacción
+        await connect("START TRANSACTION");
+        console.log("Transaction started");
 
+        // Ejecutar la inserción
+        const insertResult = await connect(insertQuery, [id]);
+        console.log("Insert result:", insertResult);
+
+        // Obtener el ID del atributo del producto recién insertado
+        const result = await connect(selectQuery);
+        console.log("Select result:", result);
+
+        // Confirmar la transacción
+        await connect("COMMIT");
+        console.log("Transaction committed");
+
+        // Asegurarse de que el valor devuelto sea un número entero
+        const idProductAttribute = insertResult.insertId;
+        console.log("ID Product Attribute:", idProductAttribute);
+
+        createCombinationAtrribute(idProductAttribute, atributo);
+        createCombinationShop(idProductAttribute, id);
+        updateProductPriceCombination(id);
+
+        return Number(idProductAttribute);
+    } catch (error) {
+        // Revertir la transacción en caso de error
+        await connect("ROLLBACK");
+        console.error("Transaction rolled back due to error:", error);
+        throw error;
+    }
+};
+
+createCombinationAtrribute = async (idProductAttribute, idAttribute) => {
+    const query = `
+    INSERT INTO ps_product_attribute_combination (
+        id_product_attribute, 
+        id_attribute
+    ) VALUES (
+        ?, ?
+    );
+    `;
+    return await connect(query, [idProductAttribute, idAttribute]);
+};
+
+createCombinationShop = async (idProductAttribute, idProduct) => {
+    const query = `
+    INSERT INTO ps_product_attribute_shop
+(id_product, id_product_attribute, id_shop, wholesale_price, price, ecotax, weight, unit_price_impact, default_on, minimal_quantity, low_stock_threshold, low_stock_alert, available_date)
+VALUES(?, ?, 1, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, NULL, 1, NULL, 0, NULL);`;
+
+    return await connect(query, [idProduct, idProductAttribute]);
+};
+
+updateProductPriceCombination = async (id) => {
+    const query = `
+    UPDATE 
+    ps_product 
+SET
+    price = ?
+WHERE
+    id_product = ?
+    `;
+
+    const queryShop = `
+    UPDATE 
+    ps_product_shop 
+SET
+    price = 0.00
+WHERE
+    id_product = ?
+    `;
+    await connect(queryShop, [id]);
+    return await connect(query, [id]);
+};
+
+exports.updateCombinationPrice = async (id, price) => {
+    const query = `
+    UPDATE 
+    ps_product_attribute 
+SET
+    price = ?
+WHERE
+    id_product_attribute = ?
+    `;
+
+    const queryShop = `
+    UPDATE 
+    ps_product_attribute_shop 
+SET
+    price = ?
+WHERE
+    id_product_attribute = ?
+    `;
+    await connect(queryShop, [price, id]);
+    return await connect(query, [price, id]);
+};
