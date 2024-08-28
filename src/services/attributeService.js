@@ -36,10 +36,10 @@ INNER JOIN
 WHERE 
     agl.id_lang = 2
     AND al.id_lang = 2
-    And ag.id_attribute_group > 20
+    And ag.id_attribute_group > ?
 ORDER BY 
     ag.id_attribute_group ASC,
     a.id_attribute ASC`;
-    return await connect(query, null);
+    return await connect(query, process.env.group_atributos);
 }
 
