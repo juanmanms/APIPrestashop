@@ -65,6 +65,16 @@ SET
 WHERE
     id_product = ?
     `;
+
+    const queryShop = `
+    UPDATE
+    ps_product_shop
+SET
+    id_tax_rules_group = ?
+WHERE
+    id_product = ?
+    `;
+    await connect(queryShop, [iva, id]);
     return await connect(query, [iva, id]);
 };
 
