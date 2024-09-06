@@ -98,8 +98,8 @@ INNER JOIN ps_attribute_lang al ON a.id_attribute = al.id_attribute
 INNER JOIN ps_seller_product sp ON p.id_product = sp.id_product
 INNER JOIN ps_seller s ON sp.id_seller = s.id_seller
 INNER JOIN ps_product_shop ps ON p.id_product = ps.id_product
-INNER JOIN ps_tax_rule tr ON ps.id_tax_rules_group = tr.id_tax_rules_group
-INNER JOIN ps_tax t ON tr.id_tax = t.id_tax
+LEFT JOIN ps_tax_rule tr ON ps.id_tax_rules_group = tr.id_tax_rules_group
+LEFT JOIN ps_tax t ON tr.id_tax = t.id_tax
 WHERE pl.id_lang = 2
   AND s.id_customer = ?
 ORDER BY p.id_product
