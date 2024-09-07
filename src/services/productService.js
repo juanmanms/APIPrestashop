@@ -7,8 +7,8 @@ exports.getProductsBySeller = async (id) => {
     SELECT 
     p.id_product,
     pl.name AS product_name,
-    p.price,
-    p.price * (1 + (t.rate / 100)) AS "precio_IVA", 
+    FORMAT(p.price, 2) AS price,
+    FORMAT(p.price * (1 + (t.rate / 100)), 2) AS precio_IVA,  
     p.quantity,
     p.active,
     p.id_tax_rules_group,
