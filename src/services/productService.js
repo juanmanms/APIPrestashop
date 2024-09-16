@@ -296,3 +296,22 @@ WHERE
     await connect(queryShop, [price, id]);
     return await connect(query, [price, id]);
 };
+
+exports.deleteCombination = async (id) => {
+    console.log("ID", id);
+    const query = `
+    DELETE FROM 
+    ps_product_attribute 
+WHERE
+    id_product_attribute = ?
+    `;
+
+    const queryShop = `
+    DELETE FROM 
+    ps_product_attribute_shop 
+WHERE
+    id_product_attribute = ?
+    `;
+    await connect(queryShop, [id]);
+    return await connect(query, [id]);
+};
