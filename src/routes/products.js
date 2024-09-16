@@ -92,7 +92,6 @@ router.get('/combinations/active', async (req, res) => {
 });
 
 router.delete('/combinations', async (req, res) => {
-    console.log("Combinacion ", req.body);
     const { id } = req.body;
     try {
         await deleteCombination(id);

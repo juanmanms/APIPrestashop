@@ -298,7 +298,6 @@ WHERE
 };
 
 exports.deleteCombination = async (id) => {
-    console.log("ID", id);
     const query = `
     DELETE FROM 
     ps_product_attribute 
