@@ -6,6 +6,8 @@ const productRoutes = require('./routes/products');
 const sellerRoutes = require('./routes/sellers');
 const authRoutes = require('./routes/auth');
 const attributeRoutes = require('./routes/attributes');
+const ordersRoutes = require('./routes/orders');
+const clientRoutes = require('./routes/clients');
 
 app.use(express.json());
 
@@ -23,6 +25,8 @@ app.use('/products', productRoutes);
 app.use('/attributes', attributeRoutes);
 app.use('/sellers', sellerRoutes);
 app.use('/auth', authRoutes);
+app.use('/orders', ordersRoutes);
+app.use('/clients', clientRoutes);
 // app.use('/categories', categoryRoutes);
 
 //un mensaje de bienvenida en la ruta /

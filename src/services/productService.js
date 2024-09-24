@@ -1,5 +1,4 @@
 //usar connect de prestashopConector.js
-const { query } = require("express");
 const { connect } = require("../controllers/prestashopConector");
 
 exports.getProductsBySeller = async (id) => {
