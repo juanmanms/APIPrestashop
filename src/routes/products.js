@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { updateProductPrice, getProductsBySeller, updateProductIVA, getCombinations, activeProduct, updateProductName, getProductsNoCombinations, createCombination, updateCombinationPrice, deleteCombination } = require('../services/productService');
+const { updateProductPrice, getProductsBySeller, updateProductIVA, getCombinations, activeProduct, updateProductName, getProductsNoCombinations, createCombination, updateCombinationPrice, deleteCombination, getImagenes, deleteImage } = require('../services/productService');
 
 const verifyToken = require('../middleware/middleware');
 
@@ -100,6 +100,28 @@ router.delete('/combinations', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 
+});
+
+router.get('/imagenes', async (req, res) => {
+    const id = getIdFromToken(req);
+    console.log("imagenes", id);
+    const sellerProducts = await getImagenes(id);
+    res.json(sellerProducts);
+});
+
+router.post('/imagenes', (req, res) => {
+    res.json({ message: 'Product price updated' });
+});
+
+router.delete('/imagenes', async (req, res) => {
+    const { id_product, id_image } = req.body;
+    console.log("Producto ", id_product, "imagen ", id_image);
+    try {
+        await deleteImage(id_product, id_image);
+        res.json({ message: 'Imagen deleted' });
+    } catch (error) {
+        res.status(500).json({ message: 'No se pudo eliminar imagen' });
+    }
 });
 
 

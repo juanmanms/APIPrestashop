@@ -313,3 +313,49 @@ WHERE
     await connect(queryShop, [id]);
     return await connect(query, [id]);
 };
+
+exports.getImagenes = async (id) => {
+    const query = `
+SELECT 
+    p.id_product,
+    pl.name AS product_name,
+    i.id_image,
+    CASE 
+        WHEN LENGTH(i.id_image) = 1 THEN CONCAT('img/p/', SUBSTRING(i.id_image, 1, 1), '/', i.id_image, '.jpg')
+        WHEN LENGTH(i.id_image) = 2 THEN CONCAT('img/p/', SUBSTRING(i.id_image, 1, 1), '/', SUBSTRING(i.id_image, 2, 1), '/', i.id_image, '.jpg')
+        WHEN LENGTH(i.id_image) = 3 THEN CONCAT('img/p/', SUBSTRING(i.id_image, 1, 1), '/', SUBSTRING(i.id_image, 2, 1), '/', SUBSTRING(i.id_image, 3, 1), '/', i.id_image, '.jpg')
+        WHEN LENGTH(i.id_image) = 4 THEN CONCAT('img/p/', SUBSTRING(i.id_image, 1, 1), '/', SUBSTRING(i.id_image, 2, 1), '/', SUBSTRING(i.id_image, 3, 1), '/', SUBSTRING(i.id_image, 4, 1), '/', i.id_image, '.jpg')
+        ELSE CONCAT('img/p/', SUBSTRING(i.id_image, 1, 1), '/', SUBSTRING(i.id_image, 2, 1), '/', SUBSTRING(i.id_image, 3, 1), '/', SUBSTRING(i.id_image, 4, 1), '/', SUBSTRING(i.id_image, 5, 1), '/', i.id_image, '.jpg')
+    END AS image_url
+FROM 
+    ps_product p
+INNER JOIN 
+    ps_product_lang pl ON p.id_product = pl.id_product
+INNER JOIN 
+    ps_image i ON p.id_product = i.id_product
+INNER JOIN 
+    ps_seller_product sp ON p.id_product = sp.id_product
+INNER JOIN 
+    ps_seller s ON sp.id_seller = s.id_seller
+LEFT JOIN 
+    ps_tax t ON p.id_tax_rules_group = t.id_tax
+WHERE 
+    s.id_customer = ?
+    AND pl.id_lang = 2
+ORDER BY 
+    p.id_product   `;
+    return await connect(query, [id]);
+}
+
+exports.deleteImage = async (id_product, id_image) => {
+    const query = `
+    DELETE FROM 
+    ps_image 
+WHERE
+    id_product = ?
+    AND id_image = ?
+    `;
+    return await connect(query, [id_product, id_image]);
+};
+
+
