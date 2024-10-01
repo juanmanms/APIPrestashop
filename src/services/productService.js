@@ -331,7 +331,7 @@ FROM
     ps_product p
 INNER JOIN 
     ps_product_lang pl ON p.id_product = pl.id_product
-INNER JOIN 
+LEFT JOIN 
     ps_image i ON p.id_product = i.id_product
 INNER JOIN 
     ps_seller_product sp ON p.id_product = sp.id_product
@@ -357,5 +357,14 @@ WHERE
     `;
     return await connect(query, [id_product, id_image]);
 };
+
+exports.uploadImage = async (id_product, image) => {
+    //obtener id y archivo de la imagen
+
+    //subir a directorio del servidor
+    const fs = require('fs');
+
+}
+
 
 
