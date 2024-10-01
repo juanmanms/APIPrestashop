@@ -1,7 +1,6 @@
 // routes/products.js
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
 const jwt = require('jsonwebtoken');
 const { updateProductPrice, getProductsBySeller, updateProductIVA, getCombinations, activeProduct, updateProductName, getProductsNoCombinations, createCombination, updateCombinationPrice, deleteCombination, getImagenes, deleteImage } = require('../services/productService');
 
@@ -108,12 +107,6 @@ router.get('/imagenes', async (req, res) => {
     console.log("imagenes", id);
     const sellerProducts = await getImagenes(id);
     res.json(sellerProducts);
-});
-
-router.post('/imagenes', (req, res) => {
-    const { image } = req.body;
-    console.log("Imagen ", image);
-
 });
 
 router.delete('/imagenes', async (req, res) => {
