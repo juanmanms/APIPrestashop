@@ -14,7 +14,7 @@ INNER JOIN
     ps_seller s ON sp.id_seller = s.id_seller
 WHERE 
     s.id_customer = ?              
-    AND pl.name LIKE CONCAT('comanda parada ', s.name, '%')  
+    AND pl.name LIKE 'comanda%'  
     AND pl.id_lang = 2`;
     return await connect(query, [id]);
 }
