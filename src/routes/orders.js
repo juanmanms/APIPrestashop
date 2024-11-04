@@ -31,8 +31,8 @@ router.get('/comanda', async (req, res) => {
 });
 
 router.post('/cart', async (req, res) => {
-    const { id_customer, id_address, product, price, date } = req.body;
-    const cart = await createPsCart(id_customer, process.env.transportista, id_address, product, price, date);
+    const { id_customer, id_address, product, price, date, carrier } = req.body;
+    const cart = await createPsCart(id_customer, carrier, id_address, product, price, date);
     console.log(cart);
 });
 

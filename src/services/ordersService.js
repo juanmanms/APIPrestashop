@@ -81,6 +81,7 @@ exports.createPsCart = async (id_customer, id_carrier, id_address, product, pric
         const idOrder = await createPsOrder(price, id_carrier, id_customer, insertResult.insertId, id_address, date);
         console.log("Order created", idOrder);
         createPsOrderDetail(idOrder, product, price);
+        createOrderCarrier(idOrder, id_carrier);
 
 
         return Number(insertResult.insertId);
@@ -116,11 +117,21 @@ const createPsCartProduct = async (id_cart, id_product) => {
     return await connect(query, [id_cart, id_product]);
 }
 
+const calc_env_tax = (transportista, price) => {
+    return transportista != 27 ? 0 : price < 75 ? 4 : 0
+
+}
+
+const calc_env = (transportista, price) => {
+    return transportista != 27 ? 0 : price < 75 ? 3.31 : 0
+
+}
+
 const createPsOrder = async (priced, id_carrier, id_customer, id_cart, id_address, date) => {
     const price = Number(priced);
     const reference = generateRandomCode();
-    const envio_tax = price < 75 ? 4 : 0;
-    const envio = price < 75 ? 3.31 : 0;
+    const envio_tax = calc_env_tax(id_carrier, price);
+    const envio = calc_env(id_carrier, price);
     const total_tax = price + envio_tax;
     const total = price + envio;
 
@@ -363,6 +374,44 @@ ORDER BY
     `;
 
     return await connect(query, [id_seller]);
+}
+
+const createOrderCarrier = async (order, carrier) => {
+    const query = `
+        INSERT INTO ps_order_carrier
+        (
+            id_order, 
+            id_carrier, 
+            id_order_invoice, 
+            weight, 
+            shipping_cost_tax_excl, 
+            shipping_cost_tax_incl, 
+            tracking_number, 
+            date_add
+        ) VALUES ( 
+            ?, 
+            ?, 
+            0, 
+            0, 
+            '', 
+            '', 
+            '', 
+            NOW()
+        );
+    `;
+
+    try {
+        await connect("Start transaction");
+        console.log("Transaction started");
+
+        await connect(query, [order, carrier]);
+
+        console.log("Order carrier created");
+    } catch (error) {
+        await connect("rollback");
+        console.log("Transaction rolled back");
+        throw error;
+    }
 }
 
 
