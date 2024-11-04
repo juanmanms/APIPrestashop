@@ -313,9 +313,6 @@ AND
     return await connect(query, [id_product]);
 }
 
-
-
-
 const generateRandomCode = () => {
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -330,5 +327,42 @@ const generateRandomCode = () => {
 
     return code;
 };
+
+exports.getPedidos = async (id_seller) => {
+    const query = `
+    SELECT 
+    s.id_customer AS 'Id Vendedor',
+    s.name AS 'Nombre Vendedor',
+    o.id_order AS 'Id Pedido',
+    o.reference AS 'Referencia Pedido',
+    o.date_add AS 'Fecha Pedido',
+    c.id_customer AS 'Id Cliente',
+    CONCAT(c.firstname, ' ', c.lastname) AS 'Nombre Cliente',
+    od.product_id AS 'Id Producto',
+    od.product_name AS 'Nombre Producto',
+    od.product_quantity AS 'Cantidad',
+    o.total_paid AS 'Total Pagado',
+    o.payment AS 'Método de Pago',
+    o.current_state 
+FROM 
+    ps_orders o
+LEFT JOIN 
+    ps_order_detail od ON o.id_order = od.id_order
+LEFT JOIN 
+    ps_seller_product sp ON od.product_id = sp.id_product
+LEFT JOIN 
+    ps_seller s ON sp.id_seller = s.id_seller
+LEFT JOIN 
+    ps_customer c ON o.id_customer = c.id_customer
+WHERE 
+    o.current_state IN (22, 23, 24, 26, 27, 28, 29, 30 ) -- Cambia los estados según lo que consideres un pedido completado
+And s.id_customer = ?
+ORDER BY 
+    o.date_add DESC 
+ Limit 50
+    `;
+
+    return await connect(query, [id_seller]);
+}
 
 

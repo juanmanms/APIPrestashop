@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 
-const { getProductComandaBySeller, createPsCart } = require('../services/ordersService');
+const { getProductComandaBySeller, createPsCart, getPedidos } = require('../services/ordersService');
 
 const verifyToken = require('../middleware/middleware');
 
@@ -35,6 +35,12 @@ router.post('/cart', async (req, res) => {
     const cart = await createPsCart(id_customer, process.env.transportista, id_address, product, price, date);
     console.log(cart);
 });
+
+router.get('/orders', async (req, res) => {
+    const id = getIdFromToken(req);
+    const orders = await getPedidos(id);
+    res.json(orders);
+})
 
 
 
