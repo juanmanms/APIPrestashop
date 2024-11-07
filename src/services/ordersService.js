@@ -82,6 +82,7 @@ exports.createPsCart = async (id_customer, id_carrier, id_address, product, pric
         console.log("Order created", idOrder);
         createPsOrderDetail(idOrder, product, price);
         createOrderCarrier(idOrder, id_carrier);
+        createOrderHistory(idOrder, 22)
 
 
         return Number(insertResult.insertId);
@@ -366,7 +367,7 @@ LEFT JOIN
 LEFT JOIN 
     ps_customer c ON o.id_customer = c.id_customer
 WHERE 
-    o.current_state IN (22, 23, 24, 26, 27, 28, 29, 30 ) -- Cambia los estados según lo que consideres un pedido completado
+    o.current_state IN (22, 23, 24, 26, 27, 28, 29, 30, 6 ) -- Cambia los estados según lo que consideres un pedido completado
 And s.id_customer = ?
 ORDER BY 
     o.date_add DESC 
@@ -412,6 +413,70 @@ const createOrderCarrier = async (order, carrier) => {
         console.log("Transaction rolled back");
         throw error;
     }
+}
+
+const createOrderHistory = async (order, state) => {
+    query = `
+    INSERT INTO ps_order_history (
+        id_employee,
+        id_order,
+        id_order_state,
+        date_add
+    ) VALUES (
+        2, 
+        ?, 
+        ?, 
+        NOW()
+    )`;
+
+    try {
+        connect("Start transaction");
+        console.log("Transaction started");
+
+        await connect(query, [order, state]);
+
+    } catch (error) {
+        await connect("rollback");
+        console.log("Transaction rolled back");
+        throw error;
+    }
+
+
+}
+
+exports.cancelOrder = async (order) => {
+    query = `
+    INSERT INTO ps_order_history (
+        id_employee,
+        id_order,
+        id_order_state,
+        date_add
+    ) VALUES (
+        2, 
+        ?, 
+        6, 
+        NOW()
+    )`;
+
+    queryUpdate = `
+    UPDATE ps_orders 
+    SET current_state = 6 
+    WHERE id_order = ?
+    `
+
+    try {
+        connect("Start transaction");
+        console.log("Transaction started");
+
+        await connect(query, [order]);
+        await connect(queryUpdate, [order]);
+
+    } catch (error) {
+        await connect("rollback");
+        console.log("Transaction rolled back");
+        throw error;
+    }
+
 }
 
 

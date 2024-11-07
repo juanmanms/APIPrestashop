@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 
-const { getProductComandaBySeller, createPsCart, getPedidos } = require('../services/ordersService');
+const { getProductComandaBySeller, createPsCart, getPedidos, cancelOrder } = require('../services/ordersService');
 
 const verifyToken = require('../middleware/middleware');
 
@@ -34,6 +34,12 @@ router.post('/cart', async (req, res) => {
     const { id_customer, id_address, product, price, date, carrier } = req.body;
     const cart = await createPsCart(id_customer, carrier, id_address, product, price, date);
     console.log(cart);
+});
+
+router.post('/cancel', async (req, res) => {
+    const { id_order } = req.body
+    await cancelOrder(id_order)
+    res.json("Pedido cancelado")
 });
 
 router.get('/orders', async (req, res) => {
