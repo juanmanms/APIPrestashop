@@ -32,8 +32,14 @@ router.get('/comanda', async (req, res) => {
 
 router.post('/cart', async (req, res) => {
     const { id_customer, id_address, product, price, date, carrier } = req.body;
-    const cart = await createPsCart(id_customer, carrier, id_address, product, price, date);
-    console.log(cart);
+    try {
+        const idOrder = await createPsCart(id_customer, carrier, id_address, product, price, date);
+        console.log(idOrder)
+        res.json({ idOrder });
+    } catch (error) {
+        console.error('Error creating cart:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 router.post('/cancel', async (req, res) => {

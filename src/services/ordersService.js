@@ -1,6 +1,6 @@
 const { connect } = require('../controllers/prestashopConector');
 
-exports.getProductComandaBySeller = async (id) => {
+const getProductComandaBySeller = async (id) => {
     const query = `
     SELECT 
     p.id_product
@@ -20,75 +20,60 @@ WHERE
 }
 
 
-exports.createPsCart = async (id_customer, id_carrier, id_address, product, price, date) => {
+const createPsCart = async (id_customer, id_carrier, id_address, product, price, date) => {
     const insertQuery = `
-    INSERT INTO ps_cart (
-        id_shop_group, 
-        id_shop, 
-        id_carrier, 
-        delivery_option, 
-        id_lang, 
-        id_address_delivery, 
-        id_address_invoice, 
-        id_currency, 
-        id_customer, 
-        id_guest, 
-        secure_key, 
-        recyclable, 
-        gift, 
-        gift_message, 
-        mobile_theme, 
-        allow_seperated_package, 
-        date_add, 
-        date_upd, 
-        checkout_session_data, 
-        ddw_order_date, 
-        ddw_order_time
-    ) VALUES (
-        0, 
-        1, 
-        ?, 
-        '', 
-        2, 
-        ?, 
-        ?, 
-        1, 
-        ?, 
-        0, 
-        0, 
-        1, 
-        0, 
-        NULL, 
-        0, 
-        0, 
-        NOW(), 
-        NOW(), 
-        NULL, 
-        DATE_ADD(NOW(), INTERVAL 1 DAY), 
-        ''
-    )`;
+        INSERT INTO ps_cart (
+            id_shop_group, id_shop, id_carrier, delivery_option, id_lang, 
+            id_address_delivery, id_address_invoice, id_currency, id_customer, id_guest, 
+            secure_key, recyclable, gift, gift_message, mobile_theme, 
+            allow_seperated_package, date_add, date_upd, checkout_session_data, 
+            ddw_order_date, ddw_order_time
+        ) VALUES (
+            0, 1, ?, '', 2, 
+            ?, ?, 1, ?, 0, 
+            0, 1, 0, NULL, 0, 
+            0, NOW(), NOW(), NULL, 
+            DATE_ADD(NOW(), INTERVAL 1 DAY), ''
+        )`;
 
     try {
-        await connect("Start transaction");
+        await connect("START TRANSACTION");
         console.log("Transaction started");
 
-        //ejecutar inserccion
+        // Insert cart
         const insertResult = await connect(insertQuery, [id_carrier, id_address, id_address, id_customer]);
-        console.log("Cart created", insertResult);
-        console.log("Product", product);
+        const cartId = Number(insertResult.insertId);
+        console.log("Cart created with ID:", cartId);
 
-        createPsCartProduct(insertResult.insertId, product);
-        const idOrder = await createPsOrder(price, id_carrier, id_customer, insertResult.insertId, id_address, date);
-        console.log("Order created", idOrder);
-        createPsOrderDetail(idOrder, product, price);
-        createOrderCarrier(idOrder, id_carrier);
-        createOrderHistory(idOrder, 22)
+        // Add product to cart
+        await createPsCartProduct(cartId, product);
+        console.log("Product added to cart:", product);
 
+        // Create order
+        const idOrder = await createPsOrder(price, id_carrier, id_customer, cartId, id_address, date);
+        console.log("Order created with ID:", idOrder);
 
-        return Number(insertResult.insertId);
+        // Create order details
+        await createPsOrderDetail(idOrder, product, price);
+        console.log("Order details created for order ID:", idOrder);
+
+        // Create order carrier
+        await createOrderCarrier(idOrder, id_carrier);
+        console.log("Order carrier added for order ID:", idOrder);
+
+        // Update order history
+        await createOrderHistory(idOrder, 22);
+        console.log("Order history updated for order ID:", idOrder);
+
+        // Commit transaction
+        await connect("COMMIT");
+        console.log("Transaction committed");
+
+        return idOrder;
     } catch (error) {
-        await connect("rollback");
-        console.log("Transaction rolled back");
+        // Rollback transaction on error
+        await connect("ROLLBACK");
+        console.error("Transaction rolled back due to error:", error);
         throw error;
     }
 
@@ -340,7 +325,7 @@ const generateRandomCode = () => {
     return code;
 };
 
-exports.getPedidos = async (id_seller) => {
+const getPedidos = async (id_seller) => {
     const query = `
     SELECT 
     s.id_customer AS 'Id Vendedor',
@@ -444,7 +429,7 @@ const createOrderHistory = async (order, state) => {
 
 }
 
-exports.cancelOrder = async (order) => {
+const cancelOrder = async (order) => {
     query = `
     INSERT INTO ps_order_history (
         id_employee,
@@ -479,4 +464,11 @@ exports.cancelOrder = async (order) => {
 
 }
 
+module.exports = {
+    cancelOrder,
+    getPedidos,
+    createPsCart,
+    getProductComandaBySeller
 
+
+}
