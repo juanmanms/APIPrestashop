@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 
-const { getProductComandaBySeller, createPsCart, getPedidos, cancelOrder } = require('../services/ordersService');
+const { getProductComandaBySeller, createPsCart, getPedidos, cancelOrder, getRepartos, getPedidosReparto } = require('../services/ordersService');
 
 const verifyToken = require('../middleware/middleware');
 
@@ -15,7 +15,14 @@ const getIdFromToken = (req) => {
 
 
 router.use((req, res, next) => {
-    req.userId = getIdFromToken(req);
+    //req.userId = getIdFromToken(req);
+    const token = req.headers['authorization'];
+    if (token.startsWith('eyJ')) {
+        const decoded = jwt.verify(token, process.env.cookie_key);
+        req.userId = decoded.id;
+    } else {
+        req.userId = null;
+    }
     next();
 });
 
@@ -54,6 +61,15 @@ router.get('/orders', async (req, res) => {
     res.json(orders);
 })
 
+router.get('/reparto', async (req, res) => {
+    const orders = await getRepartos()
+    res.json(orders);
+})
+
+router.get('/reparto/pedidos', async (req, res) => {
+    const orders = await getPedidosReparto()
+    res.json(orders);
+})
 
 
 

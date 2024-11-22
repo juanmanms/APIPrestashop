@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { getAttributes, getAttributesGrouop } = require('../services/attributeService');
+const { getAttributes, getAttributesGrouop, getRepartos } = require('../services/attributeService');
 
 router.get('/', async (req, res) => {
     console.log("Obteniendo atributos");
@@ -17,7 +17,9 @@ router.get('/group', async (req, res) => {
 
 router.get('/prueba', async (req, res) => {
     console.log("prueba");
-    res.json({ message: 'prueba' });
+    //res.json({ message: 'prueba' });
+    const orders = await getRepartos();
+    res.json(orders);
 });
 
 module.exports = router;

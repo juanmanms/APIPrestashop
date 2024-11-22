@@ -464,11 +464,124 @@ const cancelOrder = async (order) => {
 
 }
 
+const getRepartos = async () => {
+    const query = `
+    SELECT 
+    DATE_FORMAT(DATE(ord.ddw_order_date), '%d/%m/%Y') AS 'FechaEntrega',
+    c.id_customer,
+    CONCAT(c.firstname, ' ', c.lastname) AS 'Cliente',
+    CONCAT(d.address1, ' ', d.address2) AS 'Direccion',
+    d.postcode AS 'CP', 
+    d.city AS 'Poblacion', 
+    d.phone AS 'Fijo',
+    d.phone_mobile AS 'Movil',
+    COUNT(ord.id_order) AS 'Pedidos',
+    GROUP_CONCAT(ord.id_order ORDER BY ord.id_order ASC SEPARATOR ', ') AS 'IDsPedidos',
+    ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) AS 'TotalCompra',
+    IF(
+        ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) > 75.00, 
+        "0.00",
+        CASE 
+            WHEN id_carrier IN (7, 11, 12, 13, 14, 17, 18) THEN "4.00"
+            WHEN id_carrier IN (9, 15, 19) THEN "6.00"
+            WHEN id_carrier IN (10, 16, 20, 21) THEN "4.00"
+            ELSE "4.00"
+        END
+    ) AS 'CosteTransporte',
+    ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) + 
+    IF(
+        ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) > 75.00, 
+        "0.00",
+        CASE 
+            WHEN id_carrier IN (7, 11, 12, 13, 14, 17, 18) THEN "4.00"
+            WHEN id_carrier IN (9, 15, 19) THEN "6.00"
+            WHEN id_carrier IN (10, 16, 20, 21) THEN "4.00"
+            ELSE "4.00"
+        END
+    ) AS 'TotalPagarCliente',
+    SUM(IFNULL(ord.total_shipping, 0) - IFNULL(ord.total_discounts, 0)) AS 'TransporteMenosDescuentos'
+FROM 
+    ps_orders ord 	        
+LEFT JOIN 
+    ps_customer c ON c.id_customer = ord.id_customer
+LEFT JOIN 
+    ps_address d ON d.id_address = ord.id_address_delivery
+LEFT JOIN 
+    ps_state st ON st.id_state = d.id_state
+WHERE 
+    ord.current_state = 24 -- Estados "pendiente de envío", "preparación en curso", etc.
+    AND ord.payment <> 'Recollida en consigna' -- Excluir recogida en tienda si aplica
+    AND ord.id_shop = 1
+GROUP BY 
+    ord.id_customer
+ORDER BY 
+    ord.id_customer ASC;
+    `
+
+    const results = await connect(query);
+
+    // Convertir BigInt a String
+    const serializedResults = results.map(row => {
+        return Object.fromEntries(
+            Object.entries(row).map(([key, value]) => [key, typeof value === 'bigint' ? value.toString() : value])
+        );
+    });
+
+    return serializedResults;
+}
+
+const getPedidosReparto = async () => {
+    const query = `
+    SELECT 
+    ord.id_order AS 'IDPedido',
+    DATE_FORMAT(ord.ddw_order_date, '%d/%m/%Y') AS 'FechaPedido',
+    CONCAT(c.firstname, ' ', c.lastname) AS 'Cliente',
+    CONCAT(d.address1, ' ', d.address2) AS 'Dirección',
+    d.postcode AS 'CP',
+    d.city AS 'Población',
+    d.phone AS 'TeléfonoFijo',
+    d.phone_mobile AS 'TeléfonoMóvil',
+    ROUND(ord.total_products_wt, 2) AS 'TotalCompra',
+    ROUND(ord.total_shipping_tax_incl, 2) AS 'CosteTransporte',
+    ROUND(ord.total_paid_tax_incl, 2) AS 'TotalPagado',
+    carr.name AS 'Transportista'
+FROM 
+    ps_orders ord
+LEFT JOIN 
+    ps_customer c ON c.id_customer = ord.id_customer
+LEFT JOIN 
+    ps_address d ON d.id_address = ord.id_address_delivery
+LEFT JOIN 
+    ps_carrier carr ON carr.id_carrier = ord.id_carrier
+WHERE 
+    ord.current_state = 24 -- Estados "pendiente de envío", "preparación en curso", etc.
+    AND ord.payment <> 'Recollida en consigna' -- Excluir recogida en tienda si aplica
+    AND ord.id_shop = 1
+ORDER BY 
+    ord.ddw_order_date ASC, ord.id_order ASC;
+    `;
+
+    const results = await connect(query);
+    console.log(results);
+
+    const serializedResults = results.map(row => {
+        return Object.fromEntries(
+            Object.entries(row).map(([key, value]) => [key, typeof value === 'bigint' ? value.toString() : value])
+        );
+    });
+
+    return serializedResults;
+
+
+}
+
+
+
 module.exports = {
     cancelOrder,
     getPedidos,
     createPsCart,
-    getProductComandaBySeller
-
-
+    getProductComandaBySeller,
+    getRepartos,
+    getPedidosReparto
 }
