@@ -512,6 +512,7 @@ WHERE
     ord.current_state = 24 -- Estados "pendiente de envío", "preparación en curso", etc.
     AND ord.payment <> 'Recollida en consigna' -- Excluir recogida en tienda si aplica
     AND ord.id_shop = 1
+    AND ord.ddw_order_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 5 DAY) AND CURDATE()
 GROUP BY 
     ord.id_customer
 ORDER BY 
@@ -530,10 +531,11 @@ ORDER BY
     return serializedResults;
 }
 
-const getPedidosReparto = async () => {
+const getPedidosReparto = async (customer) => {
     const query = `
     SELECT 
     ord.id_order AS 'IDPedido',
+    ord.current_state AS 'Estado',
     DATE_FORMAT(ord.ddw_order_date, '%d/%m/%Y') AS 'FechaPedido',
     CONCAT(c.firstname, ' ', c.lastname) AS 'Cliente',
     CONCAT(d.address1, ' ', d.address2) AS 'Dirección',
@@ -557,12 +559,13 @@ WHERE
     ord.current_state = 24 -- Estados "pendiente de envío", "preparación en curso", etc.
     AND ord.payment <> 'Recollida en consigna' -- Excluir recogida en tienda si aplica
     AND ord.id_shop = 1
+    AND ord.ddw_order_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 5 DAY) AND CURDATE()
+    AND c.id_customer = ?
 ORDER BY 
     ord.ddw_order_date ASC, ord.id_order ASC;
     `;
 
-    const results = await connect(query);
-    console.log(results);
+    const results = await connect(query, [customer]);
 
     const serializedResults = results.map(row => {
         return Object.fromEntries(

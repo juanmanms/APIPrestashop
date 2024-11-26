@@ -66,8 +66,10 @@ router.get('/reparto', async (req, res) => {
     res.json(orders);
 })
 
-router.get('/reparto/pedidos', async (req, res) => {
-    const orders = await getPedidosReparto()
+router.post('/reparto/pedidos', async (req, res) => {
+    const { customer } = req.body
+    const orders = await getPedidosReparto(customer)
+    console.log(orders)
     res.json(orders);
 })
 
