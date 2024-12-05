@@ -171,7 +171,8 @@ const createPsOrder = async (priced, id_carrier, id_customer, id_cart, id_addres
     date_add,
     date_upd,
     ddw_order_date,
-    ddw_order_time
+    ddw_order_time,
+    forma_pago
 ) VALUES (
     ?,
     1,
@@ -221,7 +222,8 @@ const createPsOrder = async (priced, id_carrier, id_customer, id_cart, id_addres
     NOW(),
     NOW(),
     ?,
-    NULL
+    NULL,
+    'tpv'
 );
 
     `;
@@ -499,7 +501,12 @@ const getRepartos = async () => {
             ELSE "4.00"
         END
     ) AS 'TotalPagarCliente',
-    SUM(IFNULL(ord.total_shipping, 0) - IFNULL(ord.total_discounts, 0)) AS 'TransporteMenosDescuentos'
+    SUM(IFNULL(ord.total_shipping, 0) - IFNULL(ord.total_discounts, 0)) AS 'TransporteMenosDescuentos',
+    -- Lógica para forma de pago
+    CASE 
+        WHEN COUNT(DISTINCT ord.forma_pago) = 1 THEN MAX(ord.forma_pago) -- Si solo hay una forma de pago
+        ELSE 'Variado' -- Si hay más de una
+    END AS 'FormaPago'
 FROM 
     ps_orders ord 	        
 LEFT JOIN 
@@ -512,7 +519,7 @@ WHERE
     ord.current_state = 24 -- Estados "pendiente de envío", "preparación en curso", etc.
     AND ord.payment <> 'Recollida en consigna' -- Excluir recogida en tienda si aplica
     AND ord.id_shop = 1
-    AND ord.ddw_order_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 5 DAY) AND CURDATE()
+    AND ord.ddw_order_date BETWEEN DATE_SUB(NOW(), INTERVAL 5 DAY) AND NOW()
 GROUP BY 
     ord.id_customer
 ORDER BY 
@@ -546,7 +553,10 @@ const getPedidosReparto = async (customer) => {
     ROUND(ord.total_products_wt, 2) AS 'TotalCompra',
     ROUND(ord.total_shipping_tax_incl, 2) AS 'CosteTransporte',
     ROUND(ord.total_paid_tax_incl, 2) AS 'TotalPagado',
-    carr.name AS 'Transportista'
+    ROUND(ord.total_shipping_tax_incl - ord.total_discounts, 2) AS 'TotalTransporte',
+    carr.name AS 'Transportista',
+    ord.forma_pago AS 'FormaPago',
+    od.product_name AS 'Producto'
 FROM 
     ps_orders ord
 LEFT JOIN 
@@ -555,11 +565,13 @@ LEFT JOIN
     ps_address d ON d.id_address = ord.id_address_delivery
 LEFT JOIN 
     ps_carrier carr ON carr.id_carrier = ord.id_carrier
+LEFT JOIN 
+    ps_order_detail od ON od.id_order = ord.id_order -- Línea de pedido
 WHERE 
     ord.current_state = 24 -- Estados "pendiente de envío", "preparación en curso", etc.
     AND ord.payment <> 'Recollida en consigna' -- Excluir recogida en tienda si aplica
     AND ord.id_shop = 1
-    AND ord.ddw_order_date BETWEEN DATE_SUB(CURDATE(), INTERVAL 5 DAY) AND CURDATE()
+    AND ord.ddw_order_date BETWEEN DATE_SUB(NOW(), INTERVAL 5 DAY) AND NOW()
     AND c.id_customer = ?
 ORDER BY 
     ord.ddw_order_date ASC, ord.id_order ASC;
@@ -578,6 +590,53 @@ ORDER BY
 
 }
 
+const getCienPedidosHistoria = async () => {
+    const query = `
+    SELECT 
+    ord.id_order AS 'IDPedido',
+    ord.current_state AS 'Estado',
+    DATE_FORMAT(ord.ddw_order_date, '%d/%m/%Y') AS 'FechaPedido',
+    CONCAT(c.firstname, ' ', c.lastname) AS 'Cliente',
+    CONCAT(d.address1, ' ', d.address2) AS 'Dirección',
+    d.postcode AS 'CP',
+    d.city AS 'Población',
+    d.phone AS 'TeléfonoFijo',
+    d.phone_mobile AS 'TeléfonoMóvil',
+    ROUND(ord.total_products_wt, 2) AS 'TotalCompra',
+    ROUND(ord.total_shipping_tax_incl, 2) AS 'CosteTransporte',
+    ROUND(ord.total_paid_tax_incl, 2) AS 'TotalPagado',
+    ROUND(ord.total_shipping_tax_incl - ord.total_discounts, 2) AS 'TotalTransporte',
+    carr.name AS 'Transportista'
+FROM
+    ps_orders ord
+LEFT JOIN
+    ps_customer c ON c.id_customer = ord.id_customer
+LEFT JOIN
+    ps_address d ON d.id_address = ord.id_address_delivery
+LEFT JOIN
+    ps_carrier carr ON carr.id_carrier = ord.id_carrier
+WHERE
+    ord.current_state <> 6-- Estados "pendiente de envío", "preparación en curso", etc.
+    AND ord.payment <> 'Recollida en consigna' -- Excluir recogida en tienda si aplica
+    AND ord.id_shop = 1
+    AND ord.ddw_order_date BETWEEN DATE_SUB(NOW(), INTERVAL 10 DAY) AND NOW()
+ORDER BY
+    ord.ddw_order_date DESC, ord.id_order DESC
+limit 100;
+    `;
+
+    const results = await connect(query);
+
+    const serializedResults = results.map(row => {
+        return Object.fromEntries(
+            Object.entries(row).map(([key, value]) => [key, typeof value === 'bigint' ? value.toString() : value])
+        );
+    });
+
+    return serializedResults;
+}
+
+
 
 
 module.exports = {
@@ -586,5 +645,6 @@ module.exports = {
     createPsCart,
     getProductComandaBySeller,
     getRepartos,
-    getPedidosReparto
+    getPedidosReparto,
+    getCienPedidosHistoria
 }

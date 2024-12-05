@@ -12,8 +12,16 @@ const getIdFromToken = (req) => {
     return decoded.id;
 };
 
+
 router.use((req, res, next) => {
-    req.userId = getIdFromToken(req);
+    //req.userId = getIdFromToken(req);
+    const token = req.headers['authorization'];
+    if (token.startsWith('eyJ')) {
+        const decoded = jwt.verify(token, process.env.cookie_key);
+        req.userId = decoded.id;
+    } else {
+        req.userId = null;
+    }
     next();
 });
 
@@ -35,6 +43,11 @@ router.get('/products/:active', async (req, res) => {
     const id = getIdFromToken(req);
     const sellerProducts = await getSellerActiveProducts(id, active);
     res.json(sellerProducts);
+});
+
+router.get('/all', async (req, res) => {
+    const sellers = await getSellers();
+    res.json(sellers);
 });
 
 

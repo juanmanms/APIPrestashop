@@ -3,13 +3,16 @@ const { connect } = require('../controllers/prestashopConector');
 const getSellers = async () => {
     const query = `
     SELECT 
-    s.id_seller, 
+    s.id_seller,
+    s.id_customer, 
     s.name AS seller_name, 
     s.email AS seller_email, 
     s.phone AS seller_phone, 
     s.active AS is_active
 FROM
     ps_seller s
+WHERE
+    s.active = 1
     `;
     return await connect(query, null);
 };

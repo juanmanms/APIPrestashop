@@ -13,10 +13,19 @@ const getIdFromToken = (req) => {
     return decoded.id;
 };
 
+
 router.use((req, res, next) => {
-    req.userId = getIdFromToken(req);
+    //req.userId = getIdFromToken(req);
+    const token = req.headers['authorization'];
+    if (token.startsWith('eyJ')) {
+        const decoded = jwt.verify(token, process.env.cookie_key);
+        req.userId = decoded.id;
+    } else {
+        req.userId = null;
+    }
     next();
 });
+
 
 router.get('/', async (req, res) => {
     const id = getIdFromToken(req);
@@ -118,6 +127,13 @@ router.delete('/imagenes', async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'No se pudo eliminar imagen' });
     }
+});
+
+router.post('/productos', async (req, res) => {
+    const { id } = req.body
+    console.log("vendedor", id);
+    const sellerProducts = await getProductsBySeller(id);
+    res.json(sellerProducts);
 });
 
 
