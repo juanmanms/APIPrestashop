@@ -38,9 +38,9 @@ router.get('/comanda', async (req, res) => {
 });
 
 router.post('/cart', async (req, res) => {
-    const { id_customer, id_address, product, price, date, carrier } = req.body;
+    const { id_customer, id_address, product, price, date, carrier, payment } = req.body;
     try {
-        const idOrder = await createPsCart(id_customer, carrier, id_address, product, price, date);
+        const idOrder = await createPsCart(id_customer, carrier, id_address, product, price, date, payment);
         console.log(idOrder)
         res.json({ idOrder });
     } catch (error) {

@@ -20,7 +20,7 @@ WHERE
 }
 
 
-const createPsCart = async (id_customer, id_carrier, id_address, product, price, date) => {
+const createPsCart = async (id_customer, id_carrier, id_address, product, price, date, payment) => {
     const insertQuery = `
         INSERT INTO ps_cart (
             id_shop_group, id_shop, id_carrier, delivery_option, id_lang, 
@@ -50,7 +50,7 @@ const createPsCart = async (id_customer, id_carrier, id_address, product, price,
         console.log("Product added to cart:", product);
 
         // Create order
-        const idOrder = await createPsOrder(price, id_carrier, id_customer, cartId, id_address, date);
+        const idOrder = await createPsOrder(price, id_carrier, id_customer, cartId, id_address, date, payment);
         console.log("Order created with ID:", idOrder);
 
         // Create order details
@@ -113,7 +113,7 @@ const calc_env = (transportista, price) => {
 
 }
 
-const createPsOrder = async (priced, id_carrier, id_customer, id_cart, id_address, date) => {
+const createPsOrder = async (priced, id_carrier, id_customer, id_cart, id_address, date, payment) => {
     const price = Number(priced);
     const reference = generateRandomCode();
     const envio_tax = calc_env_tax(id_carrier, price);
@@ -223,7 +223,7 @@ const createPsOrder = async (priced, id_carrier, id_customer, id_cart, id_addres
     NOW(),
     ?,
     NULL,
-    'tpv'
+    ?
 );
 
     `;
@@ -232,7 +232,7 @@ const createPsOrder = async (priced, id_carrier, id_customer, id_cart, id_addres
         await connect("Start transaction");
         console.log("Transaction started");
 
-        const insertResult = await connect(insertQuery, [reference, id_carrier, id_customer, Number(id_cart), id_address, id_address, total_tax, total_tax, total, price, price, envio_tax, envio_tax, envio, date]);
+        const insertResult = await connect(insertQuery, [reference, id_carrier, id_customer, Number(id_cart), id_address, id_address, total_tax, total_tax, total, price, price, envio_tax, envio_tax, envio, date, payment]);
 
         console.log("Order created");
 
