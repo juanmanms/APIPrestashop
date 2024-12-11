@@ -2,7 +2,20 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 
-const { getProductComandaBySeller, createPsCart, getPedidos, cancelOrder, getRepartos, getPedidosReparto, getCienPedidosHistoria } = require('../services/ordersService');
+const {
+    getProductComandaBySeller,
+    createPsCart,
+    getPedidos,
+    cancelOrder,
+    getRepartos,
+    getPedidosReparto,
+    getCienPedidosHistoria,
+    getPedidosRepartoFuturo,
+    getRepartosFuturopartosFuturo,
+    getRepartosFuturo,
+    changeStateOrder,
+    changeFormaPago,
+} = require('../services/ordersService');
 
 const verifyToken = require('../middleware/middleware');
 
@@ -72,10 +85,34 @@ router.post('/reparto/pedidos', async (req, res) => {
     res.json(orders);
 })
 
+router.get('/repartoFuturo', async (req, res) => {
+    const orders = await getRepartosFuturo()
+    res.json(orders);
+})
+
+router.post('/reparto/pedidosFuturo', async (req, res) => {
+    const { customer } = req.body
+    const orders = await getPedidosRepartoFuturo(customer)
+    res.json(orders);
+})
+
 router.get('/historico', async (req, res) => {
     const orders = await getCienPedidosHistoria();
     res.json(orders);
 })
+
+router.post('/change-state', async (req, res) => {
+    const { id_order, state } = req.body
+    await changeStateOrder(id_order, state)
+    res.json("Pedido modificadoin")
+});
+
+router.post('/change-forma-pago', async (req, res) => {
+    const { id_order, payment } = req.body
+    await changeFormaPago(id_order, payment)
+    res.json("Pedido modificado")
+});
+
 
 
 
