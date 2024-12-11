@@ -15,10 +15,16 @@ const updateActiveDay = async (id) => {
     return await connect(query, id);
 }
 
+const getCarrier = async () => {
+    const query = `SELECT * FROM ps_carrier where active = 1 and deleted = 0`;
+    return await connect(query);
+};
+
 
 
 
 module.exports = {
     getRepartos,
-    updateActiveDay
+    updateActiveDay,
+    getCarrier
 };
