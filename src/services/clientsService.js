@@ -1,6 +1,6 @@
 const { connect } = require('../controllers/prestashopConector');
 
-exports.getClients = async () => {
+const getClients = async () => {
     const query = `
     SELECT 
     c.id_customer as id,
@@ -18,7 +18,7 @@ WHERE
 }
 
 //obtener direcciones de un cliente
-exports.getAddresses = async (id) => {
+const getAddresses = async (id) => {
     const query = `
     SELECT 
     a.id_address,
@@ -39,41 +39,64 @@ WHERE
     return await connect(query, [id]);
 }
 
-exports.createCustomerAndAddress = async (customerData) => {
-    const { firstName, lastName, email, phone, address, city, postalCode, country } = customerData;
-
-    const insertCustomerQuery = `
-    INSERT INTO ps_customer (
+const createCustomerAndAddress = async (customerData) => {
+    const {
         firstname,
         lastname,
         email,
         passwd,
+        gender,
+        newsletter,
+        optin,
+        address1,
+        postcode,
+        city,
+        id_country,
+        id_state,
+        alias,
+        phone,
+        phone_mobile
+    } = customerData;
+
+    const queryInsertCustomer = `
+    INSERT INTO ps_customer (
+        id_shop_group,
+        id_shop,
         id_gender,
+        id_default_group,
+        id_lang,
+        id_risk,
+        company,
+        siret,
+        ape,
+        firstname,
+        lastname,
+        email,
+        passwd,
+        last_passwd_gen,
         birthday,
         newsletter,
         ip_registration_newsletter,
         newsletter_date_add,
         optin,
         website,
-        company,
-        siret,
-        ape,
         outstanding_allow_amount,
         show_public_prices,
-        id_risk,
         max_payment_days,
-        active,
+        secure_key,
         note,
+        active,
         is_guest,
-        id_shop,
-        id_shop_group,
+        deleted,
         date_add,
-        date_upd
+        date_upd,
+        reset_password_token,
+        reset_password_validity
     ) VALUES (
-        ?, ?, ?, '', 1, '0000-00-00', 0, '', NULL, 0, '', '', '', '', 0.00, 0, 0, 0, 0, '', 0, 1, 1, NOW(), NOW()
+        1, 1, ?, 3, 2, 0, NULL, NULL, NULL, ?, ?, ?, ?, NOW(), NULL, ?, NULL, NULL, ?, NULL, 0.000000, 0, 0, '0', NULL, 1, 0, 0, NOW(), NOW(), NULL, NULL
     )`;
 
-    const insertAddressQuery = `
+    const queryInsertAddress = `
     INSERT INTO ps_address (
         id_customer,
         id_manufacturer,
@@ -98,38 +121,57 @@ exports.createCustomerAndAddress = async (customerData) => {
         date_add,
         date_upd
     ) VALUES (
-        ?, 0, 0, 0, (SELECT id_country FROM ps_country WHERE iso_code = ?), 0, 'My Address', '', ?, ?, ?, '', ?, ?, '', ?, ?, '', '', 0, NOW(), NOW()
+        ?, 0, 0, 0, ?, ?, ?, NULL, ?, ?, ?, NULL, ?, ?, NULL, ?, ?, NULL, NULL, 0, NOW(), NOW()
     )`;
 
-    let connection;
 
     try {
-        connection = await connect();
-        await connection.beginTransaction();
+        await connect("START TRANSACTION");
         console.log("Transaction started");
 
         // Insert customer
-        const [customerResult] = await connection.query(insertCustomerQuery, [firstName, lastName, email]);
-        const customerId = customerResult.insertId;
+        const customerResult = await connect(queryInsertCustomer, [
+            Number(gender),
+            firstname,
+            lastname,
+            email,
+            passwd,
+            newsletter ? 1 : 0,
+            optin ? 1 : 0
+        ]);
+        const customerId = Number(customerResult.insertId);
         console.log("Customer created with ID:", customerId);
 
         // Insert address
-        await connection.query(insertAddressQuery, [customerId, country, lastName, firstName, address, postalCode, city, phone]);
+        await connect(queryInsertAddress, [
+            customerId,
+            id_country,
+            id_state,
+            alias,
+            lastname,
+            firstname,
+            address1,
+            postcode,
+            city,
+            phone,
+            phone_mobile
+        ]);
         console.log("Address created for customer ID:", customerId);
 
-        await connection.commit();
+        await connect("COMMIT");
         console.log("Transaction committed");
 
         return customerId;
     } catch (error) {
-        if (connection) {
-            await connection.rollback();
-            console.log("Transaction rolled back");
-        }
+        // Rollback transaction on error
+        await connect("ROLLBACK");
+        console.error("Transaction rolled back due to error:", error);
         throw error;
-    } finally {
-        if (connection) {
-            connection.release();
-        }
     }
+};
+
+module.exports = {
+    createCustomerAndAddress,
+    getClients,
+    getAddresses
 };

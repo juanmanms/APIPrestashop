@@ -19,24 +19,38 @@ router.get('/adresses/:id', async (req, res) => {
 );
 
 router.post('/add', async (req, res) => {
-    const customerData = {
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        email: req.body.email,
-        phone: req.body.phone,
-        address: req.body.address,
-        city: req.body.city,
-        postalCode: req.body.postalCode,
-        country: req.body.country
-    };
+    console.log('add');
+    const data = req.body; // Acceder directamente a req.body
+    if (!data) {
+        return res.status(400).json({ error: 'No data provided' });
+    }
 
-    createCustomerAndAddress(customerData)
-        .then(customerId => {
-            console.log('Customer and address created with customer ID:', customerId);
-        })
-        .catch(error => {
-            console.error('Error creating customer and address:', error);
-        });
+    // console.log(`address1: ${data.address1}`);
+    // console.log(`alias: ${data.alias}`);
+    // console.log(`city: ${data.city}`);
+    // console.log(`email: ${data.email}`);
+    // console.log(`firstname: ${data.firstname}`);
+    // console.log(`gender: ${data.gender}`);
+    // console.log(`id_country: ${data.id_country}`);
+    // console.log(`id_state: ${data.id_state}`);
+    // console.log(`lastname: ${data.lastname}`);
+    // console.log(`newsletter: ${data.newsletter}`);
+    // console.log(`optin: ${data.optin}`);
+    // console.log(`passwd: ${data.passwd}`);
+    // console.log(`phone: ${data.phone}`);
+    // console.log(`phone_mobile: ${data.phone_mobile}`);
+    // console.log(`postcode: ${data.postcode}`);
+
+    createCustomerAndAddress(data)
+
+
+    // createCustomerAndAddress(customerData)
+    //     .then(customerId => {
+    //         console.log('Customer and address created with customer ID:', customerId);
+    //     })
+    //     .catch(error => {
+    //         console.error('Error creating customer and address:', error);
+    //     });
 })
 
 
