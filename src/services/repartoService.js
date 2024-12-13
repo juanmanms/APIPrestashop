@@ -20,11 +20,31 @@ const getCarrier = async () => {
     return await connect(query);
 };
 
+const updateEndTime = async (id, endTime) => {
+    const query = `
+    UPDATE ps_delivery_days
+    SET end_time = ?
+    WHERE id_delivery_day = ?
+    `;
+    return await connect(query, [endTime, id]);
+}
+
+const updateStartTime = async (id, startTime) => {
+    const query = `
+    UPDATE ps_delivery_days
+    SET start_time = ?
+    WHERE id_delivery_day = ?
+    `;
+    return await connect(query, [startTime, id]);
+}
+
 
 
 
 module.exports = {
     getRepartos,
     updateActiveDay,
-    getCarrier
+    getCarrier,
+    updateEndTime,
+    updateStartTime
 };
