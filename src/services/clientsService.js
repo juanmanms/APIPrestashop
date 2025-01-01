@@ -17,6 +17,22 @@ WHERE
     return await connect(query);
 }
 
+const getClientsDuplicateMail = async () => {
+    const query = `
+    SELECT *
+FROM ps_customer
+WHERE email IN (
+    SELECT email
+    FROM ps_customer
+    GROUP BY email
+    HAVING COUNT(*) > 1
+)
+ORDER BY email
+    `;
+    return await connect(query);
+}
+
+
 //obtener direcciones de un cliente
 const getAddresses = async (id) => {
     const query = `
@@ -170,8 +186,97 @@ const createCustomerAndAddress = async (customerData) => {
     }
 };
 
+const updateCustomerAndAddress = async (customerData, Id) => {
+    const {
+        firstname,
+        lastname,
+        email,
+        passwd,
+        gender,
+        newsletter,
+        optin,
+        address1,
+        postcode,
+        city,
+        id_country,
+        id_state,
+        alias,
+        phone,
+        phone_mobile
+    } = customerData;
+
+    const id_customer = Id;
+
+    const queryUpdateCustomer = `
+    UPDATE ps_customer
+    SET
+        firstname = ?,
+        lastname = ?,
+        email = ?
+    WHERE
+        id_customer = ?
+    `;
+    const queryUpdateAddress = `
+    UPDATE ps_address
+    SET
+        id_country = ?,
+        id_state = ?,
+        alias = ?,
+        lastname = ?,
+        firstname = ?,
+        address1 = ?,
+        postcode = ?,
+        city = ?,
+        phone = ?,
+        phone_mobile = ?
+    WHERE
+        id_customer = ?
+    `;
+
+    try {
+        await connect("START TRANSACTION");
+        console.log("Transaction started");
+
+        // Update customer
+        await connect(queryUpdateCustomer, [
+            firstname,
+            lastname,
+            email,
+            id_customer
+        ]);
+        console.log("Customer updated with ID:", id_customer);
+
+        // Update address
+        await connect(queryUpdateAddress, [
+            id_country,
+            id_state,
+            alias,
+            lastname,
+            firstname,
+            address1,
+            postcode,
+            city,
+            phone,
+            phone_mobile,
+            id_customer
+        ]);
+        console.log("Address updated for customer ID:", id_customer);
+
+        await connect("COMMIT");
+        console.log("Transaction committed");
+    } catch (error) {
+        // Rollback transaction on error
+        await connect("ROLLBACK");
+        console.error("Transaction rolled back due to error:", error);
+        throw error;
+    }
+}
+
+
 module.exports = {
     createCustomerAndAddress,
     getClients,
-    getAddresses
+    getAddresses,
+    getClientsDuplicateMail,
+    updateCustomerAndAddress
 };

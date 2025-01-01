@@ -1,7 +1,12 @@
 const express = require('express')
 const router = express.Router()
 
-const { getClients, getAddresses, createCustomerAndAddress } = require('../services/clientsService');
+const {
+    getClients,
+    getAddresses,
+    createCustomerAndAddress,
+    updateCustomerAndAddress
+} = require('../services/clientsService');
 
 
 router.get('/', async (req, res) => {
@@ -52,6 +57,20 @@ router.post('/add', async (req, res) => {
     //         console.error('Error creating customer and address:', error);
     //     });
 })
+
+router.put('/update/:id', async (req, res) => {
+    const data = req.body;
+    const { id } = req.params;
+    if (!data) {
+        return res.status(400).json({ error: 'No data provided' });
+    }
+    try {
+        updateCustomerAndAddress(data, id);
+    } catch (error) {
+        console.error('Error updating client:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 
 module.exports = router;

@@ -9,6 +9,7 @@ const attributeRoutes = require('./routes/attributes');
 const ordersRoutes = require('./routes/orders');
 const clientRoutes = require('./routes/clients')
 const repartoRoutes = require('./routes/repartos');
+const utilidadesRoutes = require('./routes/utilidades');
 
 app.use(express.json());
 
@@ -29,6 +30,7 @@ app.use('/auth', authRoutes);
 app.use('/orders', ordersRoutes);
 app.use('/clients', clientRoutes);
 app.use('/repartos', repartoRoutes);
+app.use('/utiles', utilidadesRoutes);
 // app.use('/categories', categoryRoutes);
 
 //un mensaje de bienvenida en la ruta /
