@@ -160,14 +160,23 @@ router.get('/categorias', async (req, res) => {
 router.post('/categorias-add-product', async (req, res) => {
     const { id_product, id_category } = req.body
     console.log("Producto: ", id_product, "Categoria: ", id_category, "add");
-    //await addCategoryToProduct(id_product, id_category);
-    res.json({ message: 'Category added' });
+    try {
+        await addCategoryToProduct(id_product, id_category);
+        res.json({ message: 'Category added' });
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
+
 });
 router.delete('/categorias-delete-product', async (req, res) => {
     const { id_product, id_category } = req.body
     console.log("Producto: ", id_product, "Categoria: ", id_category, "delete");
-    //await deleteCategoryFromProduct(id_product, id_category);
-    res.json({ message: 'Category deleted' });
+    try {
+        await deleteCategoryFromProduct(id_product, id_category);
+        res.json({ message: 'Category deleted' });
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
 });
 
 
