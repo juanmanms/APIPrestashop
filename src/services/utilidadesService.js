@@ -25,7 +25,8 @@ const getReportResumenGenerico = async (from, to) => {
     const query = `
         SELECT 
     ord.id_order AS "ID", 
-    ord.reference AS "Ref", 
+    ord.reference AS "Ref",
+    ord.forma_pago as "Pago",
     DATE_FORMAT(DATE(ord.ddw_order_date), '%d/%m/%Y') AS "Data", 
     IF(
         ISNULL(pp.id_seller), 
