@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { getSellers, getSellerById, getSellerProducts, getSellerActiveProducts } = require('../services/sellersService');
+const { getSellers, getSellerById, getSellerProducts, getSellerActiveProducts, getFamilysSeller } = require('../services/sellersService');
 const verifyToken = require('../middleware/middleware');
 
 router.use(verifyToken);
@@ -48,6 +48,13 @@ router.get('/products/:active', async (req, res) => {
 router.get('/all', async (req, res) => {
     const sellers = await getSellers();
     res.json(sellers);
+});
+
+router.get('/familys', async (req, res) => {
+    console.log("obteniendo familias")
+    const id = getIdFromToken(req);
+    const familys = await getFamilysSeller(id);
+    res.json(familys);
 });
 
 

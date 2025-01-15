@@ -366,5 +366,64 @@ exports.uploadImage = async (id_product, image) => {
 
 }
 
+exports.getCategories = async (id) => {
+    const query = `
+    SELECT 
+    p.id_product AS "ID Producto",
+    pl.name AS "Nombre Producto",
+    p.id_category_default AS "ID Categoría",
+    cl.name AS "Categoría por Defecto",
+    s.name AS "Vendedor",
+    GROUP_CONCAT(clh.name, ' * ', clh.id_category ORDER BY clh.name ASC SEPARATOR ', ') AS "Subcategorías"
+FROM 
+    ps_product p
+LEFT JOIN 
+    ps_product_lang pl ON p.id_product = pl.id_product AND pl.id_lang = 2 -- Ajusta el ID del idioma si es necesario
+LEFT JOIN 
+    ps_category_lang cl ON p.id_category_default = cl.id_category AND cl.id_lang = 2 -- Ajusta el ID del idioma si es necesario
+LEFT JOIN 
+    ps_seller_product sp ON p.id_product = sp.id_product -- Relación entre producto y vendedor
+LEFT JOIN 
+    ps_seller s ON sp.id_seller = s.id_seller -- Relación entre vendedor y su información
+LEFT JOIN 
+    ps_category_product cp ON cp.id_product = p.id_product -- Relación entre producto y sus categorías
+LEFT JOIN 
+    ps_category_lang clh ON clh.id_category = cp.id_category AND clh.id_lang = 2 -- Ajusta el ID del idioma si es necesario
+WHERE 
+     s.id_customer = ?
+GROUP BY 
+    p.id_product
+ORDER BY 
+    p.id_product ASC;
+    `;
+
+    return await connect(query, [id]);
+}
+
+exports.addCategoryToProduct = async (id_product, id_category) => {
+    const query = `
+    INSERT INTO 
+    ps_category_product 
+    (id_category, id_product)
+VALUES
+    (?, ?);
+    `;
+    return await connect(query, [id_category, id_product]);
+
+}
+
+exports.deleteCategoryFromProduct = async (id_product, id_category) => {
+    const query = `
+    DELETE FROM 
+    ps_category_product 
+WHERE
+    id_product = ?
+    AND id_category = ?
+    `;
+    return await connect(query, [id_product, id_category]);
+}
+
+
+
 
 

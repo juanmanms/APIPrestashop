@@ -2,7 +2,23 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { updateProductPrice, getProductsBySeller, updateProductIVA, getCombinations, activeProduct, updateProductName, getProductsNoCombinations, createCombination, updateCombinationPrice, deleteCombination, getImagenes, deleteImage } = require('../services/productService');
+const {
+    updateProductPrice,
+    getProductsBySeller,
+    updateProductIVA,
+    getCombinations,
+    activeProduct,
+    updateProductName,
+    getProductsNoCombinations,
+    createCombination,
+    updateCombinationPrice,
+    deleteCombination,
+    getImagenes,
+    deleteImage,
+    getCategories,
+    addCategoryToProduct,
+    deleteCategoryFromProduct,
+} = require('../services/productService');
 
 const verifyToken = require('../middleware/middleware');
 
@@ -134,6 +150,24 @@ router.post('/productos', async (req, res) => {
     console.log("vendedor", id);
     const sellerProducts = await getProductsBySeller(id);
     res.json(sellerProducts);
+});
+
+router.get('/categorias', async (req, res) => {
+    const id = getIdFromToken(req);
+    const categories = await getCategories(id);
+    res.json(categories);
+});
+router.post('/categorias-add-product', async (req, res) => {
+    const { id_product, id_category } = req.body
+    console.log("Producto: ", id_product, "Categoria: ", id_category, "add");
+    //await addCategoryToProduct(id_product, id_category);
+    res.json({ message: 'Category added' });
+});
+router.delete('/categorias-delete-product', async (req, res) => {
+    const { id_product, id_category } = req.body
+    console.log("Producto: ", id_product, "Categoria: ", id_category, "delete");
+    //await deleteCategoryFromProduct(id_product, id_category);
+    res.json({ message: 'Category deleted' });
 });
 
 

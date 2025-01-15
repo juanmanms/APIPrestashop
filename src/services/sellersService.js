@@ -80,6 +80,39 @@ ORDER BY
     return await connect(query, [id, active]);
 }
 
+const getFamilysSeller = async (id) => {
+    const query = `
+        SELECT 
+    s.id_seller AS "ID Vendedor",
+    s.name AS "Nombre Vendedor",
+    cl.id_category AS "ID Categoría",
+    cl.name AS "Nombre Categoría",
+    GROUP_CONCAT(clh.name, ' * ', clh.id_category ORDER BY clh.name ASC SEPARATOR ', ') AS "Subcategorías"
+FROM 
+    ps_seller s
+LEFT JOIN 
+    ps_category_lang cl ON s.name = cl.name
+LEFT JOIN 
+    ps_category c ON cl.id_category = c.id_category
+LEFT JOIN 
+    ps_category ch ON c.id_category = ch.id_parent
+LEFT JOIN 
+    ps_category_lang clh ON ch.id_category = clh.id_category
+WHERE
+	s.id_customer = ?
+	and s.active = 1 -- Solo vendedores activos
+    and cl.id_lang = 2
+    and clh.id_lang = 2
+GROUP BY 
+    s.id_seller, cl.id_category
+ORDER BY 
+    s.name ASC;
+    `
+    return await connect(query, id);
+}
+
+
+
 
 
 
@@ -87,5 +120,6 @@ module.exports = {
     getSellers,
     getSellerById,
     getSellerProducts,
-    getSellerActiveProducts
+    getSellerActiveProducts,
+    getFamilysSeller
 };
