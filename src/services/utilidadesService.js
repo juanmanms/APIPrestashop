@@ -66,9 +66,102 @@ ORDER BY
     return result;
 }
 
+//consulta para saber que clientes tienen más de una dirección
+const getClientesAddress = async () => {
+    const query = `
+    SELECT 
+        a.id_customer,
+        CONCAT(c.firstname, ' ', c.lastname) AS customer_name,
+        COUNT(a.id_address) AS address_count
+    FROM 
+        ps_address a
+    INNER JOIN 
+        ps_customer c ON a.id_customer = c.id_customer
+    WHERE 
+        a.active = 1  -- Considerar solo las direcciones activas
+        AND a.deleted = 0 
+    GROUP BY 
+        a.id_customer
+    HAVING 
+        COUNT(a.id_address) > 1 
+    ORDER BY 
+        address_count DESC;
+    `;
+
+    const results = await connect(query);
+
+    // Convertir BigInt a String
+    const serializedResults = results.map(row => {
+        return Object.fromEntries(
+            Object.entries(row).map(([key, value]) => [key, typeof value === 'bigint' ? value.toString() : value])
+        );
+    });
+
+    return serializedResults;
+}
+
+const getProductosSinFoto = async () => {
+    const query = `
+    SELECT 
+    p.id_product, 
+    pl.name AS product_name,
+    s.id_seller,
+    s.name AS seller_name
+FROM 
+    ps_product p
+INNER JOIN 
+    ps_product_lang pl ON p.id_product = pl.id_product
+LEFT JOIN 
+    ps_seller_product sp ON p.id_product = sp.id_product
+LEFT JOIN 
+    ps_seller s ON sp.id_seller = s.id_seller
+LEFT JOIN 
+    ps_image i ON p.id_product = i.id_product
+WHERE 
+    i.id_image IS NULL
+And
+   pl.id_lang = 2
+And
+    p.active = 1
+GROUP BY 
+    p.id_product, pl.name, s.id_seller, s.name
+ORDER BY 
+    p.id_product;
+    `;
+    const result = await connect(query);
+    return result;
+
+}
+
+const getProductsSinCategoria = async () => {
+    const query = `
+    SELECT 
+    p.id_product,
+    pl.name,
+    p.id_category_default 
+FROM 
+    ps_product p
+LEFT JOIN 
+    ps_category_product cp ON p.id_product = cp.id_product
+LEFT JOIN 
+    ps_product_lang pl ON p.id_product = pl.id_product AND pl.id_lang = 2 -- Ajusta el ID del idioma si es necesario
+WHERE 
+    p.active = 1
+    AND cp.id_category in (1,2, 20)
+ORDER BY 
+    p.id_product ASC;
+    `;
+
+    const result = await connect(query);
+    return result;
+}
+
 
 module.exports = {
     getPaymentMethods,
     updatePaymentMethod,
-    getReportResumenGenerico
+    getReportResumenGenerico,
+    getClientesAddress,
+    getProductosSinFoto,
+    getProductsSinCategoria
 }

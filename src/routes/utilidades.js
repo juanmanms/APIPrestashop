@@ -4,7 +4,10 @@ const router = express.Router();
 const {
     getPaymentMethods,
     updatePaymentMethod,
-    getReportResumenGenerico
+    getReportResumenGenerico,
+    getClientesAddress,
+    getProductosSinFoto,
+    getProductsSinCategoria
 } = require('../services/utilidadesService');
 
 router.get('/payment-methods', async (req, res) => {
@@ -29,5 +32,40 @@ router.post('/report-resumen-generico', async (req, res) => {
     res.json(report);
 }
 );
+
+router.get('/clientes-address', async (req, res) => {
+    console.log("Obteniendo direcciones de clientes");
+    try {
+        const clientesAddress = await getClientesAddress();
+        res.json(clientesAddress);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Error al obtener direcciones de clientes" });
+    }
+}
+);
+
+router.get('/sin-foto', async (req, res) => {
+    console.log("Obteniendo productos sin foto");
+    try {
+        const productosSinFoto = await getProductosSinFoto();
+        res.json(productosSinFoto);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Error al obtener productos sin foto" });
+    }
+});
+
+router.get('/sin-categoria', async (req, res) => {
+    console.log("Obteniendo productos sin categoría");
+    try {
+        const productosSinCategoria = await getProductsSinCategoria();
+        res.json(productosSinCategoria);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Error al obtener productos sin categoría" });
+    }
+});
+
 
 module.exports = router
