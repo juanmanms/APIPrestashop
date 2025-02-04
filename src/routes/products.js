@@ -18,6 +18,8 @@ const {
     getCategories,
     addCategoryToProduct,
     deleteCategoryFromProduct,
+    getCategoryBySeller,
+    createProductBySellet
 } = require('../services/productService');
 
 const verifyToken = require('../middleware/middleware');
@@ -28,6 +30,8 @@ const getIdFromToken = (req) => {
     const decoded = jwt.verify(token, process.env.cookie_key);
     return decoded.id;
 };
+
+
 
 
 router.use((req, res, next) => {
@@ -174,6 +178,20 @@ router.delete('/categorias-delete-product', async (req, res) => {
     try {
         await deleteCategoryFromProduct(id_product, id_category);
         res.json({ message: 'Category deleted' });
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+router.post('/add-product', async (req, res) => {
+    const id = getIdFromToken(req);
+    const { name, price, taxRate } = req.body
+    const category = await getCategoryBySeller(id);
+    console.log("vendedor", id);
+    try {
+        //console.log("Producto: ", id, name, price, taxRate, category[0].id_category);
+        await createProductBySellet(category[0].categoria, price, taxRate, name, "esta prueba", category[0].vendedor, category[0].proveedor);
+        res.json({ message: 'Product created' });
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
     }

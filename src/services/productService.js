@@ -423,6 +423,109 @@ WHERE
     return await connect(query, [id_product, id_category]);
 }
 
+exports.createProductBySellet = async (id_category, price, id_tax, name, description, id_seller, supplier) => {
+    console.log("llamada", id_category, price, id_tax, name, description, id_seller,);
+
+    try {
+        const productId = await createProduct(id_category, price, id_tax, supplier);
+        //console.log("Producto creado:", Number(productId));
+        await createProductShop(Number(productId), id_category, price);
+        await createProductLang(Number(productId), name, description);
+        await createSellerProduct(id_seller, Number(productId));
+        await addSupplierToProduct(Number(productId), supplier);
+        await addCategory(Number(productId), id_category);
+        return productId;
+    } catch (error) {
+        console.error("Error creating product:", error);
+        throw error;
+    }
+
+}
+//obtener la categoria y el suplier v incula da al vendedor
+exports.getCategoryBySeller = async (id) => {
+    const query = `
+    SELECT 
+    c.id_category AS "categoria", 
+    sup.id_supplier AS "proveedor",
+    s.id_seller AS "vendedor"
+FROM ps_category_lang c
+INNER JOIN ps_seller s ON c.name = s.name
+LEFT JOIN ps_supplier sup ON sup.name = s.name
+WHERE s.id_customer = ?
+and c.id_lang =2
+    `
+    return await connect(query, [id]);
+}
+
+
+const createProduct = async (id_category, price, id_tax, supplier) => {
+    const query = `
+    INSERT INTO 
+    ps_product 
+    (id_category_default, price, id_tax_rules_group, quantity, active, state, id_supplier)
+VALUES
+    (?, ?, ?, 0, 1, 1, ?);
+    `;
+    const result = await connect(query, [id_category, price, id_tax, supplier]);
+    return result.insertId;
+}
+
+const createProductShop = async (id_product, id_category, price) => {
+    const query = `
+    INSERT INTO
+    ps_product_shop
+    (id_product, id_shop, id_category_default, price, wholesale_price, active)
+VALUES
+    (?, 1, ?, ?, 0.00, 1);
+    `;
+    return await connect(query, [id_product, id_category, price]);
+}
+
+const createProductLang = async (id_product, name, description) => {
+    const query = `
+    INSERT INTO
+    ps_product_lang
+    (id_product, id_shop, id_lang, name, description)
+VALUES
+    (?, 1, 2, ?, ?);
+    `;
+    return await connect(query, [id_product, name, description]);
+}
+
+const createSellerProduct = async (id_seller, id_product) => {
+    const query = `
+    INSERT INTO
+    ps_seller_product
+    (id_seller, id_product)
+VALUES
+    (?, ?);
+    `;
+    return await connect(query, [id_seller, id_product]);
+}
+
+const addCategory = async (id_product, id_category) => {
+    const query = `
+    INSERT INTO
+    ps_category_product
+    (id_category, id_product)
+VALUES
+    (?, ?);
+    `;
+    return await connect(query, [id_category, id_product]);
+}
+
+const addSupplierToProduct = async (id_product, id_supplier) => {
+    const query = `
+    INSERT INTO
+    ps_product_supplier
+    (id_product, id_supplier)
+VALUES
+    (?, ?);
+    `;
+    return await connect(query, [id_product, id_supplier]);
+}
+
+
 
 
 
