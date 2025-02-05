@@ -156,6 +156,29 @@ ORDER BY
     return result;
 }
 
+const getInfoSeller = async () => {
+    const query = `
+    SELECT 
+    c.id_category AS "ID_Categoria", 
+    c.name AS "Categoría", 
+    s.id_seller AS "ID_Vendedor",
+    s.name AS "Vendedor",
+    sup.id_supplier AS "ID_Proveedor",
+    c.description,
+    s.email,
+    s.phone
+FROM ps_category_lang c
+INNER JOIN ps_seller s ON c.name = s.name
+LEFT JOIN ps_supplier sup ON sup.name = s.name
+WHERE c.id_lang =2
+and s.active = 1
+`;
+
+    const result = await connect(query);
+    return result;
+}
+
+
 
 module.exports = {
     getPaymentMethods,
@@ -163,5 +186,6 @@ module.exports = {
     getReportResumenGenerico,
     getClientesAddress,
     getProductosSinFoto,
-    getProductsSinCategoria
+    getProductsSinCategoria,
+    getInfoSeller
 }

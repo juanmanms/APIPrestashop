@@ -7,7 +7,8 @@ const {
     getReportResumenGenerico,
     getClientesAddress,
     getProductosSinFoto,
-    getProductsSinCategoria
+    getProductsSinCategoria,
+    getInfoSeller
 } = require('../services/utilidadesService');
 
 router.get('/payment-methods', async (req, res) => {
@@ -64,6 +65,17 @@ router.get('/sin-categoria', async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: "Error al obtener productos sin categoría" });
+    }
+});
+
+router.get('/info-seller', async (req, res) => {
+    console.log("Obteniendo información de vendedores");
+    try {
+        const infoSeller = await getInfoSeller();
+        res.json(infoSeller);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Error al obtener información de vendedores" });
     }
 });
 

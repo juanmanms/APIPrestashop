@@ -21,7 +21,7 @@ WHERE
 
 //hacer login de un cliente con su email y contraseña usando cookie_key y md5
 const login = async (email, password) => {
-    console.log(email, password);
+    //console.log(email, password);
     const query = `
     SELECT 
     c.id_customer,
