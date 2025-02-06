@@ -166,16 +166,28 @@ const getInfoSeller = async () => {
     sup.id_supplier AS "ID_Proveedor",
     c.description,
     s.email,
-    s.phone
+    s.phone,
+    c.meta_keywords as "keyword",
+    COUNT(p.id_product) AS "activos",
+    CONCAT('https://botiga.mercattorreblanca.cat/img/c/', c.id_category, '.jpg') AS "Imagen_Categoria"
 FROM ps_category_lang c
 INNER JOIN ps_seller s ON c.name = s.name
 LEFT JOIN ps_supplier sup ON sup.name = s.name
+LEFT JOIN ps_seller_product sp ON s.id_seller = sp.id_seller
+LEFT JOIN ps_product p ON sp.id_product = p.id_product AND p.active = 1
 WHERE c.id_lang =2
 and s.active = 1
+GROUP BY c.id_category, c.name, s.id_seller, s.name, c.meta_keywords, sup.id_supplier
 `;
 
-    const result = await connect(query);
-    return result;
+    const results = await connect(query);
+    const serializedResults = results.map(row => {
+        return Object.fromEntries(
+            Object.entries(row).map(([key, value]) => [key, typeof value === 'bigint' ? value.toString() : value])
+        );
+    });
+
+    return serializedResults;
 }
 
 
