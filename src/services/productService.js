@@ -429,7 +429,7 @@ exports.createProductBySellet = async (id_category, price, id_tax, name, descrip
     try {
         const productId = await createProduct(id_category, price, id_tax, supplier);
         //console.log("Producto creado:", Number(productId));
-        await createProductShop(Number(productId), id_category, price);
+        await createProductShop(Number(productId), id_category, price, id_tax);
         await createProductLang(Number(productId), name, description);
         await createSellerProduct(id_seller, Number(productId));
         await addSupplierToProduct(Number(productId), supplier);
@@ -470,15 +470,15 @@ VALUES
     return result.insertId;
 }
 
-const createProductShop = async (id_product, id_category, price) => {
+const createProductShop = async (id_product, id_category, price, id_tax) => {
     const query = `
     INSERT INTO
     ps_product_shop
-    (id_product, id_shop, id_category_default, price, wholesale_price, active)
+    (id_product, id_shop, id_category_default, price, wholesale_price, active, id_tax_rules_group)
 VALUES
-    (?, 1, ?, ?, 0.00, 1);
+    (?, 1, ?, ?, 0.00, 1, ?);
     `;
-    return await connect(query, [id_product, id_category, price]);
+    return await connect(query, [id_product, id_category, price, id_tax]);
 }
 
 const createProductLang = async (id_product, name, description) => {
