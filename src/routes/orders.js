@@ -15,6 +15,9 @@ const {
     getRepartosFuturo,
     changeStateOrder,
     changeFormaPago,
+    getPedidosOnlineVendedor,
+    getPedidosOnline,
+    getLineasPedido
 } = require('../services/ordersService');
 
 const verifyToken = require('../middleware/middleware');
@@ -112,6 +115,24 @@ router.post('/change-forma-pago', async (req, res) => {
     await changeFormaPago(id_order, payment)
     res.json("Pedido modificado")
 });
+
+router.get('/pedidos-online', async (req, res) => {
+    const orders = await getPedidosOnline();
+    res.json(orders);
+})
+
+router.get('/pedidos-online-vendedor', async (req, res) => {
+    const id = getIdFromToken(req);
+    const orders = await getPedidosOnlineVendedor(id);
+    res.json(orders);
+})
+
+router.get('/lineas-pedido/:id', async (req, res) => {
+    const { id } = req.params
+    const orders = await getLineasPedido(id);
+    res.json(orders);
+})
+
 
 
 

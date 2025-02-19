@@ -816,6 +816,77 @@ const changeFormaPago = async (order, forma_pago) => {
 
 }
 
+const getPedidosOnline = async () => {
+    const query = `
+    SELECT 
+    so.id_seller_order AS "IDPedidoVendedor",
+    o.id_order AS "IDPedido",
+    o.reference AS "ReferenciaPedido",
+    so.date_add AS "FechaPedido",
+    c.id_customer AS "IDCliente",
+    CONCAT(c.firstname, ' ', c.lastname) AS "Cliente",
+    o.total_shipping_tax_incl AS "TotalEnvíoconIVA",
+    o.total_products_wt AS "TotalSinIva",
+    o.total_paid_tax_incl AS "TotalPagadoconIVA",
+    o.current_state AS "EstadoPedido"
+FROM ps_seller_order so
+INNER JOIN ps_orders o ON so.id_order = o.id_order
+INNER JOIN ps_seller s ON s.id_seller = so.id_seller
+LEFT JOIN ps_customer c ON so.id_customer = c.id_customer
+WHERE o.current_state IN (3, 13)
+  AND o.date_add >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) -- Últimos 7 días
+ORDER BY so.id_seller_order DESC;
+`
+
+    return await connect(query);
+}
+
+const getPedidosOnlineVendedor = async (id_seller) => {
+    const query = `
+SELECT 
+    so.id_seller_order AS "IDPedidoVendedor",
+    o.id_order AS "IDPedido",
+    o.reference AS "ReferenciaPedido",
+    so.date_add AS "FechaPedido",
+    c.id_customer AS "IDCliente",
+    CONCAT(c.firstname, ' ', c.lastname) AS "Cliente",
+    o.total_shipping_tax_incl AS "TotalEnvíoconIVA",
+    o.total_paid_tax_excl AS "TotalSinIva",
+    o.total_paid_tax_incl AS "TotalPagadoconIVA",
+    o.current_state AS "EstadoPedido"
+FROM ps_seller_order so
+INNER JOIN ps_orders o ON so.id_order = o.id_order
+INNER JOIN ps_seller s ON s.id_seller = so.id_seller
+LEFT JOIN ps_customer c ON so.id_customer = c.id_customer
+WHERE o.current_state IN (3, 13)
+  AND o.date_add >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) -- Últimos 7 días
+  AND s.id_customer = ?
+ORDER BY so.id_seller_order DESC;
+    `
+
+    return await connect(query, [id_seller]);
+}
+
+const getLineasPedido = async (id_order) => {
+    const query = `
+    SELECT 
+    od.product_id AS "IDProducto",
+    pl.name AS "NombreProducto",
+    od.product_quantity AS "Cantidad",
+    od.product_price AS "PrecioUnitario",
+    od.total_price_tax_incl AS "PrecioTotal"
+FROM ps_order_detail od
+INNER JOIN ps_product_lang pl ON od.product_id = pl.id_product
+WHERE od.id_order = ?
+and pl.id_lang = 2
+    `
+
+    return await connect(query, [id_order]);
+}
+
+
+
+
 
 
 module.exports = {
@@ -829,5 +900,8 @@ module.exports = {
     getRepartosFuturo,
     getPedidosRepartoFuturo,
     changeStateOrder,
-    changeFormaPago
+    changeFormaPago,
+    getPedidosOnlineVendedor,
+    getPedidosOnline,
+    getLineasPedido
 }
