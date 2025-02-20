@@ -833,7 +833,7 @@ FROM ps_seller_order so
 INNER JOIN ps_orders o ON so.id_order = o.id_order
 INNER JOIN ps_seller s ON s.id_seller = so.id_seller
 LEFT JOIN ps_customer c ON so.id_customer = c.id_customer
-WHERE o.current_state IN (3, 13)
+WHERE o.current_state IN (3, 10, 13)
   AND o.date_add >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) -- Últimos 7 días
 ORDER BY so.id_seller_order DESC;
 `
@@ -858,7 +858,7 @@ FROM ps_seller_order so
 INNER JOIN ps_orders o ON so.id_order = o.id_order
 INNER JOIN ps_seller s ON s.id_seller = so.id_seller
 LEFT JOIN ps_customer c ON so.id_customer = c.id_customer
-WHERE o.current_state IN (3, 13)
+WHERE o.current_state IN (3, 10, 13)
   AND o.date_add >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) -- Últimos 7 días
   AND s.id_customer = ?
 ORDER BY so.id_seller_order DESC;
