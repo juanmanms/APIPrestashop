@@ -8,7 +8,8 @@ const {
     getClientesAddress,
     getProductosSinFoto,
     getProductsSinCategoria,
-    getInfoSeller
+    getInfoSeller,
+    getTotales
 } = require('../services/utilidadesService');
 
 router.get('/payment-methods', async (req, res) => {
@@ -78,6 +79,19 @@ router.get('/info-seller', async (req, res) => {
         res.status(500).json({ error: "Error al obtener información de vendedores" });
     }
 });
+
+router.get('/totales-repartos/:year', async (req, res) => {
+    const { year } = req.params;
+    console.log("Obteniendo totales", year);
+    try {
+        const totales = await getTotales(year);
+        res.json(totales);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Error al obtener totales" });
+    }
+});
+
 
 
 module.exports = router

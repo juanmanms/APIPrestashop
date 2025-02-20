@@ -190,6 +190,30 @@ GROUP BY c.id_category, c.name, s.id_seller, s.name, c.meta_keywords, sup.id_sup
     return serializedResults;
 }
 
+const getTotales = async (year) => {
+    const query = `
+    SELECT LPAD(MONTH(ord.ddw_order_date), 2, '0') AS mes, 
+        COUNT(*) AS orders_total,
+        ROUND(SUM(ord.total_paid), 2) AS pedidos_euros,
+        COUNT(DISTINCT CONCAT(ord.id_customer, DATE(ord.ddw_order_date))) AS entregues,
+        ROUND(SUM(ord.total_shipping) - SUM(ord.total_discounts), 2) AS entregues_euros
+        FROM ps_orders ord
+        WHERE ord.current_state in (5, 26, 27, 30) AND YEAR(ord.ddw_order_date) = ?
+        GROUP BY mes
+        ORDER BY mes ASC
+    `;
+
+    const results = await connect(query, [year]);
+    const serializedResults = results.map(row => {
+        return Object.fromEntries(
+            Object.entries(row).map(([key, value]) => [key, typeof value === 'bigint' ? value.toString() : value])
+        );
+    });
+
+    return serializedResults;
+}
+
+
 
 
 module.exports = {
@@ -199,5 +223,6 @@ module.exports = {
     getClientesAddress,
     getProductosSinFoto,
     getProductsSinCategoria,
-    getInfoSeller
+    getInfoSeller,
+    getTotales
 }
