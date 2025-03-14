@@ -19,7 +19,8 @@ const {
     addCategoryToProduct,
     deleteCategoryFromProduct,
     getCategoryBySeller,
-    createProductBySellet
+    createProductBySellet,
+    descatalogProduct
 } = require('../services/productService');
 
 const verifyToken = require('../middleware/middleware');
@@ -195,6 +196,13 @@ router.post('/add-product', async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
     }
+});
+
+router.put('/descatalogar', async (req, res) => {
+    const { id } = req.body;
+    console.log("Producto ", id);
+    await descatalogProduct(id);
+    res.json({ message: 'Product descatalogado' });
 });
 
 

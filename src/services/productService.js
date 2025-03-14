@@ -525,6 +525,65 @@ VALUES
     return await connect(query, [id_product, id_supplier]);
 }
 
+exports.descatalogProduct = async (id_product) => {
+    try {
+        await deleteProductSeller(id_product);
+        await deleteCategoryProduct(id_product);
+        await descatalogCategoryProduct(id_product);
+        console.log("Producto descatalogado");
+        return true;
+    } catch (error) {
+        console.error("Error descatalogando producto:", error);
+        throw error;
+    }
+}
+
+const deleteProductSeller = async (id_product) => {
+    const query = `
+    DELETE FROM 
+    ps_seller_product 
+WHERE
+    id_product = ?
+    `;
+    return await connect(query, [id_product]);
+}
+
+const descatalogCategoryProduct = async (id_product) => {
+    const query = `
+    update ps_product
+    set active = 0, id_category_default = ?
+    where id_product = ?
+    `;
+
+    const queryShop = `
+    update ps_product_shop
+    set active = 0, id_category_default = ?
+    where id_product = ?
+    `;
+    await connect(query, [process.env.category_descart, id_product]);
+    await connect(queryShop, [process.env.category_descart, id_product]);
+    return true;
+}
+
+//quitar subcategorias
+const deleteCategoryProduct = async (id_product) => {
+    const query = `
+    DELETE FROM 
+    ps_category_product 
+WHERE
+    id_product = ?
+    `;
+
+    const queryShop = `
+    insert into ps_category_product
+    (id_category, id_product)
+    values (?, ?)
+    `;
+    await connect(query, [id_product]);
+    return await connect(queryShop, [process.env.category_descart, id_product]);
+}
+
+
 
 
 

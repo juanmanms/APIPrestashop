@@ -168,6 +168,7 @@ const getInfoSeller = async () => {
     s.email,
     s.phone,
     c.meta_keywords as "keyword",
+    COUNT (sp.id_product) as "productos",
     COUNT(p.id_product) AS "activos",
     CONCAT('https://botiga.mercattorreblanca.cat/img/c/', c.id_category, '.jpg') AS "Imagen_Categoria"
 FROM ps_category_lang c
