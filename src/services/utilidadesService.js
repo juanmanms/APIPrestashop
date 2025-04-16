@@ -157,10 +157,11 @@ ORDER BY
 }
 
 const getInfoSeller = async () => {
+    const server = process.env.SERVER || 'mercattorreblanca.cat';
     const query = `
     SELECT 
     c.id_category AS "ID_Categoria", 
-    c.name AS "Categoría", 
+    c.name AS "Categoria", 
     s.id_seller AS "ID_Vendedor",
     s.name AS "Vendedor",
     sup.id_supplier AS "ID_Proveedor",
@@ -168,15 +169,15 @@ const getInfoSeller = async () => {
     s.email,
     s.phone,
     c.meta_keywords as "keyword",
-    COUNT (sp.id_product) as "productos",
+    COUNT(sp.id_product) as "productos",
     COUNT(p.id_product) AS "activos",
-    CONCAT('https://botiga.mercattorreblanca.cat/img/c/', c.id_category, '.jpg') AS "Imagen_Categoria"
+    CONCAT('https://botiga.${server}/img/c/', c.id_category, '.jpg') AS "Imagen_Categoria"
 FROM ps_category_lang c
 INNER JOIN ps_seller s ON c.name = s.name
 LEFT JOIN ps_supplier sup ON sup.name = s.name
 LEFT JOIN ps_seller_product sp ON s.id_seller = sp.id_seller
 LEFT JOIN ps_product p ON sp.id_product = p.id_product AND p.active = 1
-WHERE c.id_lang =2
+WHERE c.id_lang = 2
 and s.active = 1
 GROUP BY c.id_category, c.name, s.id_seller, s.name, c.meta_keywords, sup.id_supplier
 `;

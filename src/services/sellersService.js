@@ -111,6 +111,23 @@ ORDER BY
     return await connect(query, id);
 }
 
+const updateSellerInfo = async (id, name, email, phone) => {
+    const query = `
+    UPDATE ps_seller
+    SET name = ?, email = ?, phone = ?
+    WHERE id_customer = ?
+    `;
+    return await connect(query, [name, email, phone, id]);
+}
+
+const updateParadaInfo = async (id, description, keywords) => {
+    const query = `
+    UPDATE ps_category_lang
+    SET description = ?, meta_keywords = ?
+    WHERE id_category = ?
+    `;
+    return await connect(query, [description, keywords, id]);
+}
 
 
 
@@ -121,5 +138,6 @@ module.exports = {
     getSellerById,
     getSellerProducts,
     getSellerActiveProducts,
-    getFamilysSeller
+    getFamilysSeller,
+    updateParadaInfo
 };

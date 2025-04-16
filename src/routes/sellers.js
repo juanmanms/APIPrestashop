@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { getSellers, getSellerById, getSellerProducts, getSellerActiveProducts, getFamilysSeller } = require('../services/sellersService');
+const { getSellers, getSellerById, getSellerProducts, getSellerActiveProducts, getFamilysSeller, updateParadaInfo } = require('../services/sellersService');
 const verifyToken = require('../middleware/middleware');
 
 router.use(verifyToken);
@@ -55,6 +55,13 @@ router.get('/familys', async (req, res) => {
     const id = getIdFromToken(req);
     const familys = await getFamilysSeller(id);
     res.json(familys);
+});
+
+router.put('/category-info', async (req, res) => {
+    const { id, description, keywords } = req.body;
+    console.log("Actualizando info de la categoria: ", id);
+    await updateParadaInfo(id, description, keywords);
+    res.json("Categoria actualizada");
 });
 
 
