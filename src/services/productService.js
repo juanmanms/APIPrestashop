@@ -489,6 +489,16 @@ const createProductLang = async (id_product, name, description) => {
 VALUES
     (?, 1, 2, ?, ?);
     `;
+
+    const query2 = `
+    INSERT INTO
+    ps_product_lang
+    (id_product, id_shop, id_lang, name, description)
+VALUES
+    (?, 1, 1, ?, ?);
+    `;
+    await connect(query2, [id_product, name, description]);
+
     return await connect(query, [id_product, name, description]);
 }
 
