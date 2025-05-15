@@ -11,7 +11,7 @@ const clientRoutes = require('./routes/clients')
 const repartoRoutes = require('./routes/repartos');
 const utilidadesRoutes = require('./routes/utilidades');
 const categoryRoutes = require('./routes/categories');
-https://botiga.mercattorreblanca.cat/img/c/12.jpg
+
 
 app.use(express.json());
 
