@@ -25,6 +25,7 @@ const allowedOrigins = [
 
 const corsOptions = {
     origin: function (origin, callback) {
+        console.log('CORS origin:', origin);
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
@@ -48,7 +49,7 @@ app.use('/clients', clientRoutes);
 app.use('/repartos', repartoRoutes);
 app.use('/utiles', utilidadesRoutes);
 app.use('/categories', categoryRoutes);
-app.use('/img/c', express.static('https://botiga.' + process.env.Server + '/img/c/')); // Servir imágenes de categorías
+//app.use('/img/c', express.static('https://botiga.' + process.env.Server + '/img/c/')); // Servir imágenes de categorías
 
 
 //un mensaje de bienvenida en la ruta /
