@@ -15,8 +15,22 @@ const categoryRoutes = require('./routes/categories');
 
 app.use(express.json());
 
+const allowedOrigins = [
+    'http://localhost:5173',
+    'https://torreblanca-front.vercel.app',
+    'https://fontetes-front.vercel.app',
+    'https://serraparera-front.vercel.app',
+    'https://serraperera-front.vercel.app'
+];
+
 const corsOptions = {
-    origin: ['http://localhost:5173', [/^https:\/\/torreblanca-front\.vercel\.app/], [/^https:\/\/fontetes-front\.vercel\.app/], [/^https:\/\/serraparera-front\.vercel\.app/], [/^https:\/\/serraperera-front\.vercel\.app/]],
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     optionsSuccessStatus: 200
 };
 
