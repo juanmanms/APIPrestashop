@@ -106,7 +106,8 @@ const getProductosSinFoto = async () => {
     p.id_product, 
     pl.name AS product_name,
     s.id_seller,
-    s.name AS seller_name
+    s.name AS seller_name,
+    p.active
 FROM 
     ps_product p
 INNER JOIN 

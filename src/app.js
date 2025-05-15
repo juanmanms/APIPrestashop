@@ -10,6 +10,8 @@ const ordersRoutes = require('./routes/orders');
 const clientRoutes = require('./routes/clients')
 const repartoRoutes = require('./routes/repartos');
 const utilidadesRoutes = require('./routes/utilidades');
+const categoryRoutes = require('./routes/categories');
+https://botiga.mercattorreblanca.cat/img/c/12.jpg
 
 app.use(express.json());
 
@@ -31,7 +33,9 @@ app.use('/orders', ordersRoutes);
 app.use('/clients', clientRoutes);
 app.use('/repartos', repartoRoutes);
 app.use('/utiles', utilidadesRoutes);
-// app.use('/categories', categoryRoutes);
+app.use('/categories', categoryRoutes);
+app.use('/img/c', express.static('https://botiga.' + process.env.Server + '/img/c/')); // Servir imágenes de categorías
+
 
 //un mensaje de bienvenida en la ruta /
 app.get('/', (req, res) => {
