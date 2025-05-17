@@ -886,6 +886,37 @@ and pl.id_lang = 2
     return await connect(query, [id_order]);
 }
 
+const getRepartosParada = async () => {
+    const query = `
+    SELECT 
+    s.id_seller,
+    CONCAT(vend.firstname, ' ', vend.lastname) AS nombre_vendedor,
+    COUNT(DISTINCT o.id_order) AS total_pedidos,
+    GROUP_CONCAT(DISTINCT CONCAT(cli.firstname, ' ', cli.lastname) SEPARATOR ', ') AS clientes
+FROM ps_order_detail od
+INNER JOIN ps_orders o ON o.id_order = od.id_order
+INNER JOIN ps_seller_product sp ON sp.id_product = od.product_id
+INNER JOIN ps_seller s ON s.id_seller = sp.id_seller
+INNER JOIN ps_customer vend ON vend.id_customer = s.id_customer
+INNER JOIN ps_customer cli ON cli.id_customer = o.id_customer
+WHERE o.current_state IN (24) -- Estados activos
+  AND o.id_shop = 1
+GROUP BY s.id_seller, vend.firstname, vend.lastname
+ORDER BY total_pedidos DESC;
+    `
+
+    const results = await connect(query);
+
+    // Convertir BigInt a String
+    const serializedResults = results.map(row => {
+        return Object.fromEntries(
+            Object.entries(row).map(([key, value]) => [key, typeof value === 'bigint' ? value.toString() : value])
+        );
+    });
+
+    return serializedResults;
+}
+
 
 
 
@@ -905,5 +936,6 @@ module.exports = {
     changeFormaPago,
     getPedidosOnlineVendedor,
     getPedidosOnline,
-    getLineasPedido
+    getLineasPedido,
+    getRepartosParada
 }

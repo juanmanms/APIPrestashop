@@ -17,7 +17,8 @@ const {
     changeFormaPago,
     getPedidosOnlineVendedor,
     getPedidosOnline,
-    getLineasPedido
+    getLineasPedido,
+    getRepartosParada,
 } = require('../services/ordersService');
 
 const verifyToken = require('../middleware/middleware');
@@ -130,6 +131,11 @@ router.get('/pedidos-online-vendedor', async (req, res) => {
 router.get('/lineas-pedido/:id', async (req, res) => {
     const { id } = req.params
     const orders = await getLineasPedido(id);
+    res.json(orders);
+})
+
+router.get('/repartos-parada', async (req, res) => {
+    const orders = await getRepartosParada();
     res.json(orders);
 })
 
