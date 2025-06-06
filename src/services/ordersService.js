@@ -104,12 +104,26 @@ const createPsCartProduct = async (id_cart, id_product) => {
 }
 
 const calc_env_tax = (transportista, price) => {
-    return transportista != 27 ? 0 : price < 75 ? 4 : 0
+    if (process.env.Server === 'mercatserraperera.cat') {
+        // En producción, el transportista 27 tiene un impuesto de 4€ si el precio es menor a 75€
+        return transportista != 22 ? 0 : 4;
+    } else if (process.env.Server === 'mercattorreblanca.cat') {
+        // En entorno de test, el impuesto es 2€ si el precio es menor a 50€
+        return transportista != 27 ? 0 : price < 50 ? 2 : 0;
+    }
+    return 0; // Por defecto, si no se cumple ninguna condición, no hay impuesto de envío
 
 }
 
 const calc_env = (transportista, price) => {
-    return transportista != 27 ? 0 : price < 75 ? 3.31 : 0
+    if (process.env.Server === 'mercatserraperera.cat') {
+        // En producción, el transportista 27 tiene un impuesto de 4€ si el precio es menor a 75€
+        return transportista != 22 ? 0 : 3.31;
+    } else if (process.env.Server === 'mercattorreblanca.cat') {
+
+        return transportista != 27 ? 0 : price < 75 ? 3.31 : 0
+    }
+    return 0; // Por defecto, si no se cumple ninguna condición, no hay coste de envío
 
 }
 
