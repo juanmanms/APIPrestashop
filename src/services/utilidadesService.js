@@ -163,6 +163,10 @@ const getInfoSeller = async () => {
     SELECT 
     c.id_category AS "ID_Categoria", 
     c.name AS "Categoria", 
+    c.phone AS "Telefono",
+    c.whatsapp AS "Whatsapp",
+    c.instagram AS "Instagram",
+    c.facebook AS "Facebook",
     s.id_seller AS "ID_Vendedor",
     s.name AS "Vendedor",
     sup.id_supplier AS "ID_Proveedor",
