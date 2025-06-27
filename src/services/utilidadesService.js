@@ -161,31 +161,32 @@ const getInfoSeller = async () => {
     const server = process.env.SERVER || 'mercattorreblanca.cat';
     const query = `
     SELECT 
-    c.id_category AS "ID_Categoria", 
-    c.name AS "Categoria", 
-    c.phone AS "Telefono",
-    c.whatsapp AS "Whatsapp",
-    c.instagram AS "Instagram",
-    c.facebook AS "Facebook",
-    s.id_seller AS "ID_Vendedor",
-    s.name AS "Vendedor",
-    sup.id_supplier AS "ID_Proveedor",
-    c.description,
-    s.email,
-    s.phone,
-    c.meta_keywords as "keyword",
-    COUNT(sp.id_product) as "productos",
-    COUNT(p.id_product) AS "activos",
-    CONCAT('https://botiga.${server}/img/c/', c.id_category, '.jpg') AS "Imagen_Categoria"
-FROM ps_category_lang c
-INNER JOIN ps_seller s ON c.name = s.name
-LEFT JOIN ps_supplier sup ON sup.name = s.name
-LEFT JOIN ps_seller_product sp ON s.id_seller = sp.id_seller
-LEFT JOIN ps_product p ON sp.id_product = p.id_product AND p.active = 1
-WHERE c.id_lang = 2
-and s.active = 1
-GROUP BY c.id_category, c.name, s.id_seller, s.name, c.meta_keywords, sup.id_supplier
-`;
+        cl.id_category AS "ID_Categoria", 
+        cl.name AS "Categoria", 
+        c.fijo AS "Telefono",
+        c.whatsapp AS "Whatsapp",
+        c.instagram AS "Instagram",
+        c.facebook AS "Facebook",
+        s.id_seller AS "ID_Vendedor",
+        s.name AS "Vendedor",
+        sup.id_supplier AS "ID_Proveedor",
+        cl.description,
+        s.email,
+        s.phone,
+        cl.meta_keywords as "keyword",
+        COUNT(sp.id_product) as "productos",
+        COUNT(p.id_product) AS "activos",
+        CONCAT('https://botiga.${server}/img/c/', cl.id_category, '.jpg') AS "Imagen_Categoria"
+    FROM ps_category_lang cl
+    INNER JOIN ps_category c ON cl.id_category = c.id_category
+    INNER JOIN ps_seller s ON cl.name = s.name
+    LEFT JOIN ps_supplier sup ON sup.name = s.name
+    LEFT JOIN ps_seller_product sp ON s.id_seller = sp.id_seller
+    LEFT JOIN ps_product p ON sp.id_product = p.id_product AND p.active = 1
+    WHERE cl.id_lang = 2
+    AND s.active = 1
+    GROUP BY cl.id_category, cl.name, s.id_seller, s.name, cl.meta_keywords, sup.id_supplier, c.fijo, c.whatsapp, c.instagram, c.facebook
+    `;
 
     const results = await connect(query);
     const serializedResults = results.map(row => {
