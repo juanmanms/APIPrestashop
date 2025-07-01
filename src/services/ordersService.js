@@ -109,7 +109,7 @@ const calc_env_tax = (transportista, price) => {
         return transportista != 22 ? 0 : 4;
     } else if (process.env.Server === 'mercattorreblanca.cat') {
         // En entorno de test, el impuesto es 2€ si el precio es menor a 50€
-        return transportista != 27 ? 0 : price < 50 ? 2 : 0;
+        return transportista != 27 ? 0 : price < 50 ? 4 : 0;
     }
     return 0; // Por defecto, si no se cumple ninguna condición, no hay impuesto de envío
 
