@@ -120,12 +120,21 @@ const updateSellerInfo = async (id, name, email, phone) => {
     return await connect(query, [name, email, phone, id]);
 }
 
-const updateParadaInfo = async (id, description, keywords) => {
+const updateParadaInfo = async (id, description, keywords, telefono, whatsapp, facebook, instagram) => {
     const query = `
     UPDATE ps_category_lang
     SET description = ?, meta_keywords = ?
     WHERE id_category = ?
     `;
+
+    const query2 = `
+    UPDATE ps_category
+    SET fijo = ?, whatsapp = ?, facebook = ?, instagram = ?
+    WHERE id_category = ?
+    `;
+
+    await connect(query2, [telefono, whatsapp, facebook, instagram, id]);
+
     return await connect(query, [description, keywords, id]);
 }
 
