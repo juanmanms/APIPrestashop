@@ -158,7 +158,7 @@ ORDER BY
 }
 
 const getInfoSeller = async () => {
-    const server = process.env.SERVER || 'mercattorreblanca.cat';
+    const server = process.env.Server || 'mercattorreblanca.cat';
     const query = `
     SELECT 
         cl.id_category AS "ID_Categoria", 
