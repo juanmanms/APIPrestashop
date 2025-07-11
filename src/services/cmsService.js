@@ -1,10 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 
-const IMAGES_DIR = '/var/www/vhosts/system/botiga.' + process.env.Server + '/img/horarios'; // Ajusta la ruta según tu servidor
+const pat = '/var/www/vhosts/system/botiga.' + process.env.Server + '/img/horarios'; // Ajusta la ruta según tu servidor 
+//const pat = 'C:/Users/Juanma/Documents/Lightshot'
+//const pat = 'https://botiga.mercattorreblanca.cat/img/horarios' // Ruta local para desarrollo
+
 
 // Añadir imagen
-function addImage(file, filename, directory = IMAGES_DIR) {
+function addImage(file, filename, directory = pat) {
     const destPath = path.join(directory, filename);
     return new Promise((resolve, reject) => {
         fs.copyFile(file.path, destPath, (err) => {
@@ -15,7 +18,8 @@ function addImage(file, filename, directory = IMAGES_DIR) {
 }
 
 // Obtener lista de imágenes
-function getImages(directory = IMAGES_DIR) {
+function getImages(directory = pat) {
+    console.log(pat)
     return new Promise((resolve, reject) => {
         fs.readdir(directory, (err, files) => {
             if (err) return reject(err);
@@ -27,7 +31,7 @@ function getImages(directory = IMAGES_DIR) {
 }
 
 // Modificar imagen (sobrescribir)
-function updateImage(file, filename, directory = IMAGES_DIR
+function updateImage(file, filename, directory = pat
 ) {
     const destPath = path.join(directory, filename);
     return new Promise((resolve, reject) => {
@@ -39,7 +43,7 @@ function updateImage(file, filename, directory = IMAGES_DIR
 }
 
 // Quitar imagen
-function deleteImage(filename, directory = IMAGES_DIR) {
+function deleteImage(filename, directory = pat) {
     const filePath = path.join(directory, filename);
     return new Promise((resolve, reject) => {
         fs.unlink(filePath, (err) => {
