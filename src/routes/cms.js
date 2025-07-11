@@ -17,7 +17,6 @@ const {
 router.get('/images', async (req, res) => {
     console.log('Obteniendo imágenes de CMS');
     console.log('Request URL:', req.originalUrl);
-    console.log('Tipo', req.tipo)
     try {
         const images = await getImages();
         res.json(images);

@@ -9,8 +9,7 @@ const pat = path.join(__dirname, '../../../botiga.' + process.env.Server + '/img
 
 
 // Añadir imagen
-function addImage(file, filename, directory = pat, tipo) {
-    console.log('Añadiendo imagen a CMS' + tipo);
+function addImage(file, filename, directory = pat) {
     const destPath = path.join(directory, filename);
     return new Promise((resolve, reject) => {
         fs.copyFile(file.path, destPath, (err) => {
@@ -22,7 +21,7 @@ function addImage(file, filename, directory = pat, tipo) {
 
 // Obtener lista de imágenes
 function getImages(directory = pat) {
-    console.log('Añadiendo imagen a CMS' + tipo);
+    console.log(pat)
     return new Promise((resolve, reject) => {
         fs.readdir(directory, (err, files) => {
             if (err) return reject(err);
