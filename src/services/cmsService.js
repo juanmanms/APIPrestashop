@@ -1,7 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const pat = '/var/www/vhosts/system/botiga.' + process.env.Server + '/img/horarios'; // Ajusta la ruta según tu servidor 
+const pat = path.join(__dirname, '../../../botiga.mercattorreblanca.cat/img/horarios');
+
+//const pat = '/var/www/vhosts/system/botiga.' + process.env.Server + '/img/horarios'; // Ajusta la ruta según tu servidor 
 //const pat = 'C:/Users/Juanma/Documents/Lightshot'
 //const pat = 'https://botiga.mercattorreblanca.cat/img/horarios' // Ruta local para desarrollo
 
