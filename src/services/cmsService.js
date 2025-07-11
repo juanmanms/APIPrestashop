@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const IMAGES_DIR = '/var/www/botiga.mercattorreblanca.cat/img/horarios/'; // Ajusta la ruta según tu servidor
+const IMAGES_DIR = '/var/www/vhosts/system/botiga.' + process.env.Server + '/img/horarios'; // Ajusta la ruta según tu servidor
 
 // Añadir imagen
 function addImage(file, filename, directory = IMAGES_DIR) {
