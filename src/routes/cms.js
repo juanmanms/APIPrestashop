@@ -17,6 +17,7 @@ const {
 router.get('/images', async (req, res) => {
     console.log('Obteniendo imágenes de CMS');
     console.log('Request URL:', req.originalUrl);
+    console.log('Tipo', req.tipo)
     try {
         const images = await getImages();
         res.json(images);
@@ -65,6 +66,17 @@ router.put('/images', upload.single('image'), async (req, res) => {
         res.status(500).json({ error: 'Error al actualizar la imagen', details: error.message });
     }
 });
+
+router.delete('/images/:filename', async (req, res) => {
+    try {
+        const { filename } = req.params;
+        const result = await deleteImage(filename);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: 'Error al eliminar la imagen', details: error.message });
+    }
+}
+);
 
 
 module.exports = router;
