@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const fs = require('fs');
+const upload = multer({ dest: 'uploads/' });
 const {
     addImage,
     getImages,
@@ -28,7 +31,7 @@ router.get('/images', async (req, res) => {
 });
 
 //añadir imagen
-router.post('/images', async (req, res) => {
+router.post('/images', upload.single('image'), async (req, res) => {
     console.log('Añadiendo imagen a CMS');
     console.log('Request URL:', req.originalUrl);
     try {
@@ -36,6 +39,8 @@ router.post('/images', async (req, res) => {
             return res.status(400).json({ error: 'No file uploaded' });
         }
         const { filename } = req.body;
+        // Opcional: puedes mover/renombrar el archivo usando fs si lo necesitas
+        // fs.renameSync(req.file.path, `uploads/${filename}`);
         const result = await addImage(req.file, filename);
         res.json(result);
     } catch (error) {
@@ -45,6 +50,19 @@ router.post('/images', async (req, res) => {
             details: error.message,
             stack: error.stack
         });
+    }
+});
+
+// Actualizar imagen
+router.put('/images', upload.single('image'), async (req, res) => {
+    try {
+        if (!req.file || !req.body.filename) {
+            return res.status(400).json({ error: 'No file or filename provided' });
+        }
+        const result = await updateImage(req.file, req.body.filename);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: 'Error al actualizar la imagen', details: error.message });
     }
 });
 
