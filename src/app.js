@@ -12,6 +12,7 @@ const repartoRoutes = require('./routes/repartos');
 const utilidadesRoutes = require('./routes/utilidades');
 const categoryRoutes = require('./routes/categories');
 const zipCodeZoneRoutes = require('./routes/zipCodeZone');
+const cmsRoutes = require('./routes/cms');
 
 app.use(express.json());
 
@@ -49,6 +50,7 @@ app.use('/repartos', repartoRoutes);
 app.use('/utiles', utilidadesRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/cp', zipCodeZoneRoutes);
+app.use('/cms', cmsRoutes);
 //app.use('/img/c', express.static('https://botiga.' + process.env.Server + '/img/c/')); // Servir imágenes de categorías
 
 
