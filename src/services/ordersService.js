@@ -496,7 +496,7 @@ const getRepartos = async () => {
     GROUP_CONCAT(ord.id_order ORDER BY ord.id_order ASC SEPARATOR ', ') AS 'IDsPedidos',
     ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) AS 'TotalCompra',
     IF(
-        ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) > 75.00, 
+        ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) >= 75.00, 
         "0.00",
         CASE 
             WHEN id_carrier IN (7, 11, 12, 13, 14, 17, 18) THEN "4.00"
@@ -507,7 +507,7 @@ const getRepartos = async () => {
     ) AS 'CosteTransporte',
     ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) + 
     IF(
-        ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) > 75.00, 
+        ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) >= 75.00, 
         "0.00",
         CASE 
             WHEN id_carrier IN (7, 11, 12, 13, 14, 17, 18) THEN "4.00"
