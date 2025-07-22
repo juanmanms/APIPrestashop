@@ -14,11 +14,12 @@ const {
 
 // Obtener todos las imagenes de CMS
 
-router.get('/images', async (req, res) => {
+router.get('/images/:tipo', async (req, res) => {
     console.log('Obteniendo imágenes de CMS');
     console.log('Request URL:', req.originalUrl);
+    const { tipo } = req.params;
     try {
-        const images = await getImages();
+        const images = await getImages(tipo);
         res.json(images);
     } catch (error) {
         console.error('Error al obtener las imágenes:', error);

@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const pat = path.join(__dirname, '../../../botiga.' + process.env.Server + '/img/horarios');
+const pat = path.join(__dirname, '../../../botiga.' + process.env.Server + '    /img/horarios');
+const pat2 = path.join(__dirname, '../../../botiga.' + process.env.Server + '    /img/');
 
 //const pat = '/var/www/vhosts/system/botiga.' + process.env.Server + '/img/horarios'; // Ajusta la ruta según tu servidor 
 //const pat = 'C:/Users/Juanma/Documents/Lightshot'
@@ -20,8 +21,9 @@ function addImage(file, filename, directory = pat) {
 }
 
 // Obtener lista de imágenes
-function getImages(directory = pat) {
-    console.log(pat)
+function getImages(tipo = 'horarios') {
+    const directory = path.join(pat2, tipo);
+    console.log('Directory:', directory);
     return new Promise((resolve, reject) => {
         fs.readdir(directory, (err, files) => {
             if (err) return reject(err);
