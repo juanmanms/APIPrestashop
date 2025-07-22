@@ -10,7 +10,8 @@ const pat2 = path.join(__dirname, '../../../botiga.' + process.env.Server + '/im
 
 
 // Añadir imagen
-function addImage(file, filename, directory = pat) {
+function addImage(tipo = "horarios", file, filename, directory = pat) {
+    const directory = path.join(directory, tipo);
     const destPath = path.join(directory, filename);
     return new Promise((resolve, reject) => {
         fs.copyFile(file.path, destPath, (err) => {

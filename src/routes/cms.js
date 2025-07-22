@@ -32,9 +32,8 @@ router.get('/images/:tipo', async (req, res) => {
 });
 
 //añadir imagen
-router.post('/images', upload.single('image'), async (req, res) => {
-    console.log('Añadiendo imagen a CMS');
-    console.log('Request URL:', req.originalUrl);
+router.post('/images/:tipo', upload.single('image'), async (req, res) => {
+    const { tipo } = req.params;
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
@@ -42,7 +41,7 @@ router.post('/images', upload.single('image'), async (req, res) => {
         const { filename } = req.body;
         // Opcional: puedes mover/renombrar el archivo usando fs si lo necesitas
         // fs.renameSync(req.file.path, `uploads/${filename}`);
-        const result = await addImage(req.file, filename);
+        const result = await addImage(tipo, req.file, filename);
         res.json(result);
     } catch (error) {
         console.error('Error al añadir la imagen:', error);
