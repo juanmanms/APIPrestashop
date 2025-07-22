@@ -66,16 +66,15 @@ router.put('/images', upload.single('image'), async (req, res) => {
         res.status(500).json({ error: 'Error al actualizar la imagen', details: error.message });
     }
 });
-router.delete('/images/:filename', async (req, res) => {
+router.delete('/images/:tipo/:filename', async (req, res) => {
     try {
-        const { filename } = req.params;
-        const result = await deleteImage(filename);
+        const { tipo, filename } = req.params;
+        const result = await deleteImage(tipo, filename);
         res.json(result);
     } catch (error) {
         res.status(500).json({ error: 'Error al eliminar la imagen', details: error.message });
     }
-}
-);
+});
 
 
 module.exports = router;
