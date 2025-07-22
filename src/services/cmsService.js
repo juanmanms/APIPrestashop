@@ -47,7 +47,7 @@ function updateImage(file, filename, directory = pat
 }
 
 // Quitar imagen
-function deleteImage(filename, tipo = 'horarios') {
+function deleteImage(tipo = 'horarios', filename) {
     const directory = path.join(pat2, tipo);
     const filePath = path.join(directory, filename);
     return new Promise((resolve, reject) => {
