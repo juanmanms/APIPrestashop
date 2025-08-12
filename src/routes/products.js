@@ -20,7 +20,8 @@ const {
     deleteCategoryFromProduct,
     getCategoryBySeller,
     createProductBySellet,
-    descatalogProduct
+    descatalogProduct,
+    changeAttributeCombination
 } = require('../services/productService');
 
 const verifyToken = require('../middleware/middleware');
@@ -205,5 +206,11 @@ router.put('/descatalogar', async (req, res) => {
     res.json({ message: 'Product descatalogado' });
 });
 
+router.put('/change-attribute', async (req, res) => {
+    const { id_product, id_attribute } = req.body;
+    console.log("Producto ", id_product, "Atributo ", id_attribute);
+    await changeAttributeCombination(id_product, id_attribute);
+    res.json({ message: 'Product attribute changed' });
+});
 
 module.exports = router;

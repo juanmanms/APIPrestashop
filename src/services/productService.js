@@ -87,7 +87,8 @@ exports.getCombinations = async (id) => {
                 t.rate AS tax_rate,
                 (pa.price * (1 + t.rate / 100)) AS price_with_tax,
                 p.active,
-                pa.id_product_attribute
+                pa.id_product_attribute,
+                p.cache_default_attribute
 FROM ps_product p
 INNER JOIN ps_product_attribute pa ON p.id_product = pa.id_product
 INNER JOIN ps_product_lang pl ON p.id_product = pl.id_product
@@ -593,8 +594,24 @@ WHERE
     return await connect(queryShop, [process.env.category_descart, id_product]);
 }
 
+exports.changeAttributeCombination = async (id_product, id_attribute) => {
+    const query = `
+    UPDATE 
+    ps_product
+    SET cache_default_attribute = ?
+    WHERE id_product = ?
+    `;
 
+    const queryShop = `
+    UPDATE
+    ps_product_shop
+    SET cache_default_attribute = ?
+    WHERE id_product = ?
+    `;
+    await connect(queryShop, [id_attribute, id_product]);
 
+    return await connect(query, [id_attribute, id_product]);
+}
 
 
 
