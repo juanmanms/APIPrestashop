@@ -534,7 +534,7 @@ WHERE
     ord.current_state = 24 -- Estados "pendiente de envío", "preparación en curso", etc.
     AND ord.payment <> 'Recollida en consigna' -- Excluir recogida en tienda si aplica
     AND ord.id_shop = 1
-    AND ord.ddw_order_date BETWEEN DATE_SUB(NOW(), INTERVAL 5 DAY) AND NOW()
+    AND ord.ddw_order_date BETWEEN DATE_SUB(NOW(), INTERVAL 31 DAY) AND NOW()
 GROUP BY 
     ord.id_customer
 ORDER BY 
