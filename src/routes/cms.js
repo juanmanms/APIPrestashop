@@ -61,20 +61,20 @@ router.put('/images', upload.single('image'), async (req, res) => {
         res.status(500).json({ error: 'Error al actualizar la imagen', details: error.message });
     }
 });
-router.delete('/images/:tipo/:filename', async (req, res) => {
-    try {
-        const { tipo, filename } = req.params;
-        const result = await deleteImage(tipo, filename);
-        res.json(result);
-    } catch (error) {
-        res.status(500).json({ error: 'Error al eliminar la imagen', details: error.message });
-    }
-});
 router.delete('/images/:tipo/:parada/:filename', async (req, res) => {
     try {
         const { tipo, parada, filename } = req.params;
         const path = `${parada}/${filename}`;
         const result = await deleteImage(tipo, path);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: 'Error al eliminar la imagen', details: error.message });
+    }
+});
+router.delete('/images/:tipo/:filename', async (req, res) => {
+    try {
+        const { tipo, filename } = req.params;
+        const result = await deleteImage(tipo, filename);
         res.json(result);
     } catch (error) {
         res.status(500).json({ error: 'Error al eliminar la imagen', details: error.message });
