@@ -28,6 +28,27 @@ router.get('/images/:tipo', async (req, res) => {
 });
 
 //añadir imagen
+router.post('images/:tipo/:parada', upload.single('image'), async (req, res) => {
+    const { tipo, parada } = req.params;
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+        const { filename } = req.body;
+        const fullTipo = `${tipo}/${parada}`;
+        // Opcional: puedes mover/renombrar el archivo usando fs si lo necesitas
+        const result = await addImage(fullTipo, req.file, filename);
+        res.json(result);
+    } catch (error) {
+        console.error('Error al añadir la imagen:', error);
+        res.status(500).json({
+            error: 'Error al añadir la imagen',
+            details: error.message,
+            stack: error.stack
+        });
+    }
+});
+
 router.post('/images/:tipo', upload.single('image'), async (req, res) => {
     const { tipo } = req.params;
     try {
