@@ -13,10 +13,15 @@ const pat2 = path.join(__dirname, '../../../botiga.' + process.env.Server + '/im
 function addImage(tipo = "horarios", file, filename) {
     const directory = path.join(pat2, tipo);
     const destPath = path.join(directory, filename);
+
     return new Promise((resolve, reject) => {
-        fs.copyFile(file.path, destPath, (err) => {
+        fs.mkdir(directory, { recursive: true }, (err) => {
             if (err) return reject(err);
-            resolve({ success: true, filename });
+
+            fs.copyFile(file.path, destPath, (err) => {
+                if (err) return reject(err);
+                resolve({ success: true, filename });
+            });
         });
     });
 }
