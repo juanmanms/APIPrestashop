@@ -28,7 +28,7 @@ router.get('/images/:tipo', async (req, res) => {
 });
 
 //añadir imagen
-router.post('images/:tipo/:parada', upload.single('image'), async (req, res) => {
+router.post('/images/:tipo/:parada', upload.single('image'), async (req, res) => {
     const { tipo, parada } = req.params;
     try {
         if (!req.file) {
