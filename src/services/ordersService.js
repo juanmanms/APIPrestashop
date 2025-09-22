@@ -484,62 +484,61 @@ const cancelOrder = async (order) => {
 const getRepartos = async () => {
     const query = `
     SELECT 
-        DATE_FORMAT(DATE(ord.ddw_order_date), '%d/%m/%Y') AS 'FechaEntrega',
-        c.id_customer,
-        CONCAT(c.firstname, ' ', c.lastname) AS 'Cliente',
-        CONCAT(d.address1, ' ', IFNULL(NULLIF(d.address2, ''), '')) AS 'Direccion',
-        d.postcode AS 'CP', 
-        d.city AS 'Poblacion', 
-        d.phone AS 'Fijo',
-        d.phone_mobile AS 'Movil',
-        COUNT(ord.id_order) AS 'Pedidos',
-        GROUP_CONCAT(ord.id_order ORDER BY ord.id_order ASC SEPARATOR ', ') AS 'IDsPedidos',
-        ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) AS 'TotalCompra',
-        IF(
-            ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) >= 75.00, 
-            "0.00",
-            CASE 
-                WHEN MAX(ord.id_carrier) IN (7, 11, 12, 13, 14, 17, 18) THEN "4.00"
-                WHEN MAX(ord.id_carrier) IN (9, 15, 19) THEN "6.00"
-                WHEN MAX(ord.id_carrier) IN (10, 16, 20, 21) THEN "4.00"
-                ELSE "4.00"
-            END
-        ) AS 'CosteTransporte',
-        ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) + 
-        IF(
-            ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) >= 75.00, 
-            "0.00",
-            CASE 
-                WHEN MAX(ord.id_carrier) IN (7, 11, 12, 13, 14, 17, 18) THEN "4.00"
-                WHEN MAX(ord.id_carrier) IN (9, 15, 19) THEN "6.00"
-                WHEN MAX(ord.id_carrier) IN (10, 16, 20, 21) THEN "4.00"
-                ELSE "4.00"
-            END
-        ) AS 'TotalPagarCliente',
-        SUM(IFNULL(ord.total_shipping, 0) - IFNULL(ord.total_discounts, 0)) AS 'TransporteMenosDescuentos',
-        GROUP_CONCAT(DISTINCT ord.forma_pago SEPARATOR ', ') AS 'FormasPago',
-        GROUP_CONCAT(DISTINCT ord.payment SEPARATOR ', ') AS 'MetodosPago',
-        GROUP_CONCAT(DISTINCT ord.reference SEPARATOR ', ') AS 'ReferenciasPedido',
-        GROUP_CONCAT(DISTINCT ord.current_state SEPARATOR ', ') AS 'EstadosPedido',
-        GROUP_CONCAT(DISTINCT DATE_FORMAT(ord.date_add, '%d/%m/%Y %H:%i') SEPARATOR ', ') AS 'FechasPedido',
-        GROUP_CONCAT(DISTINCT ord.total_paid_tax_incl SEPARATOR ', ') AS 'TotalesPagados'
-    FROM 
-        ps_orders ord 	        
-    LEFT JOIN 
-        ps_customer c ON c.id_customer = ord.id_customer
-    LEFT JOIN 
-        ps_address d ON d.id_address = ord.id_address_delivery
-    LEFT JOIN 
-        ps_state st ON st.id_state = d.id_state
-    WHERE 
-        ord.current_state = 24
-        AND ord.payment <> 'Recollida en consigna'
-        AND ord.id_shop = 1
-        AND ord.ddw_order_date BETWEEN DATE_SUB(NOW(), INTERVAL 31 DAY) AND NOW()
-    GROUP BY 
-        ord.id_customer
-    ORDER BY 
-        ord.id_customer ASC;
+    DATE_FORMAT(DATE(ord.ddw_order_date), '%d/%m/%Y') AS 'FechaEntrega',
+    c.id_customer,
+    CONCAT(c.firstname, ' ', c.lastname) AS 'Cliente',
+    CONCAT(d.address1, ' ', IF(d.address2 IS NOT NULL AND d.address2 != '', CONCAT(' ', d.address2), '')) AS 'Direccion',
+    d.postcode AS 'CP', 
+    d.city AS 'Poblacion', 
+    d.phone AS 'Fijo',
+    d.phone_mobile AS 'Movil',
+    COUNT(ord.id_order) AS 'Pedidos',
+    GROUP_CONCAT(ord.id_order ORDER BY ord.id_order ASC SEPARATOR ', ') AS 'IDsPedidos',
+    ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) AS 'TotalCompra',
+    IF(
+        ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) >= 75.00, 
+        "0.00",
+        CASE 
+            WHEN id_carrier IN (7, 11, 12, 13, 14, 17, 18) THEN "4.00"
+            WHEN id_carrier IN (9, 15, 19) THEN "6.00"
+            WHEN id_carrier IN (10, 16, 20, 21) THEN "4.00"
+            ELSE "4.00"
+        END
+    ) AS 'CosteTransporte',
+    ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) + 
+    IF(
+        ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) >= 75.00, 
+        "0.00",
+        CASE 
+            WHEN id_carrier IN (7, 11, 12, 13, 14, 17, 18) THEN "4.00"
+            WHEN id_carrier IN (9, 15, 19) THEN "6.00"
+            WHEN id_carrier IN (10, 16, 20, 21) THEN "4.00"
+            ELSE "4.00"
+        END
+    ) AS 'TotalPagarCliente',
+    SUM(IFNULL(ord.total_shipping, 0) - IFNULL(ord.total_discounts, 0)) AS 'TransporteMenosDescuentos',
+    -- Lógica para forma de pago
+    CASE 
+        WHEN COUNT(DISTINCT ord.forma_pago) = 1 THEN MAX(ord.forma_pago) -- Si solo hay una forma de pago
+        ELSE 'Variado' -- Si hay más de una
+    END AS 'FormaPago'
+FROM 
+    ps_orders ord 	        
+LEFT JOIN 
+    ps_customer c ON c.id_customer = ord.id_customer
+LEFT JOIN 
+    ps_address d ON d.id_address = ord.id_address_delivery
+LEFT JOIN 
+    ps_state st ON st.id_state = d.id_state
+WHERE 
+    ord.current_state = 24 -- Estados "pendiente de envío", "preparación en curso", etc.
+    AND ord.payment <> 'Recollida en consigna' -- Excluir recogida en tienda si aplica
+    AND ord.id_shop = 1
+    AND ord.ddw_order_date BETWEEN DATE_SUB(NOW(), INTERVAL 31 DAY) AND NOW()
+GROUP BY 
+    ord.id_customer
+ORDER BY 
+    ord.id_customer ASC;
     `
 
     const results = await connect(query);
