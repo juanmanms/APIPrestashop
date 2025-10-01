@@ -495,27 +495,8 @@ const getRepartos = async () => {
     COUNT(ord.id_order) AS 'Pedidos',
     GROUP_CONCAT(ord.id_order ORDER BY ord.id_order ASC SEPARATOR ', ') AS 'IDsPedidos',
     ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) AS 'TotalCompra',
-    IF(
-        ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) >= 75.00, 
-        "0.00",
-        CASE 
-            WHEN id_carrier IN (7, 11, 12, 13, 14, 17, 18) THEN "4.00"
-            WHEN id_carrier IN (9, 15, 19) THEN "6.00"
-            WHEN id_carrier IN (10, 16, 20, 21) THEN "4.00"
-            ELSE "4.00"
-        END
-    ) AS 'CosteTransporte',
-    ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) + 
-    IF(
-        ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) >= 75.00, 
-        "0.00",
-        CASE 
-            WHEN id_carrier IN (7, 11, 12, 13, 14, 17, 18) THEN "4.00"
-            WHEN id_carrier IN (9, 15, 19) THEN "6.00"
-            WHEN id_carrier IN (10, 16, 20, 21) THEN "4.00"
-            ELSE "4.00"
-        END
-    ) AS 'TotalPagarCliente',
+    SUM(IFNULL(ord.total_shipping, 0) - IFNULL(ord.total_discounts, 0)) AS 'CosteTransporte',
+    ROUND(SUM(IFNULL(ord.total_paid, 0)), 2)  AS 'TotalPagarCliente',
     SUM(IFNULL(ord.total_shipping, 0) - IFNULL(ord.total_discounts, 0)) AS 'TransporteMenosDescuentos',
     -- Lógica para forma de pago
     CASE 
