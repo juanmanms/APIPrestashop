@@ -869,13 +869,21 @@ const getLineasPedido = async (id_order) => {
     SELECT 
     od.product_id AS "IDProducto",
     pl.name AS "NombreProducto",
+    s.name AS "Vendedor",
     od.product_quantity AS "Cantidad",
     od.product_price AS "PrecioUnitario",
     od.total_price_tax_incl AS "PrecioTotal"
 FROM ps_order_detail od
-INNER JOIN ps_product_lang pl ON od.product_id = pl.id_product
-WHERE od.id_order = ?
-and pl.id_lang = 2
+INNER JOIN ps_product_lang pl 
+    ON od.product_id = pl.id_product 
+    AND pl.id_lang = 2
+INNER JOIN ps_product p 
+    ON od.product_id = p.id_product
+LEFT JOIN ps_seller_product sp 
+    ON p.id_product = sp.id_product
+LEFT JOIN ps_seller s 
+    ON sp.id_seller = s.id_seller
+WHERE od.id_order = ?;
     `
 
     return await connect(query, [id_order]);
