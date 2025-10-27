@@ -822,16 +822,24 @@ const getPedidosOnline = async () => {
     so.date_add AS "FechaPedido",
     c.id_customer AS "IDCliente",
     CONCAT(c.firstname, ' ', c.lastname) AS "Cliente",
+    car.name AS "Transportista",
     o.total_shipping_tax_incl AS "TotalEnvíoconIVA",
     o.total_products_wt AS "TotalSinIva",
     o.total_paid_tax_incl AS "TotalPagadoconIVA",
     o.current_state AS "EstadoPedido"
 FROM ps_seller_order so
-INNER JOIN ps_orders o ON so.id_order = o.id_order
-INNER JOIN ps_seller s ON s.id_seller = so.id_seller
-LEFT JOIN ps_customer c ON so.id_customer = c.id_customer
+INNER JOIN ps_orders o 
+    ON so.id_order = o.id_order
+INNER JOIN ps_seller s 
+    ON s.id_seller = so.id_seller
+LEFT JOIN ps_customer c 
+    ON so.id_customer = c.id_customer
+LEFT JOIN ps_carrier car 
+    ON o.id_carrier = car.id_carrier
 WHERE o.current_state IN (3, 10, 13)
   AND o.date_add >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) -- Últimos 7 días
+GROUP BY 
+    o.id_order
 ORDER BY so.id_seller_order DESC;
 `
 
