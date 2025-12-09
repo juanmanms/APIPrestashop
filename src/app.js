@@ -22,7 +22,7 @@ const allowedOrigins = [
     'https://fontetes-front.vercel.app',
     'https://serraparera-front.vercel.app',
     'https://serraperera-front.vercel.app',
-    'https://santjordi-front.vercel.app/',
+    'https://santjordi-front.vercel.app',
 ];
 
 const corsOptions = {
