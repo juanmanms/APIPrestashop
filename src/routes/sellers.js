@@ -58,9 +58,9 @@ router.get('/familys', async (req, res) => {
 });
 
 router.put('/category-info', async (req, res) => {
-    const { id, description, keywords, telefono, whatsapp, facebook, instagram } = req.body;
+    const { id, description, keywords, telefono, whatsapp, facebook, instagram, web, nparada } = req.body;
     console.log("Actualizando info de la categoria: ", id);
-    await updateParadaInfo(id, description, keywords, telefono, whatsapp, facebook, instagram);
+    await updateParadaInfo(id, description, keywords, telefono, whatsapp, facebook, instagram, web, nparada);
     res.json(
         {
             message: "Información de la categoría actualizada correctamente",

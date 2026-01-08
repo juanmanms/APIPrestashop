@@ -879,9 +879,9 @@ ORDER BY so.id_seller_order DESC;
     return await connect(query, [id_seller]);
 }
 
-const getLineasPedido = async (id_order) => {
-    const query = `
-    SELECT 
+const getLineasPedido = async (id_order, customer = null) => {
+    let query = `
+      SELECT 
     od.product_id AS "IDProducto",
     pl.name AS "NombreProducto",
     s.name AS "Vendedor",
@@ -898,10 +898,16 @@ LEFT JOIN ps_seller_product sp
     ON p.id_product = sp.id_product
 LEFT JOIN ps_seller s 
     ON sp.id_seller = s.id_seller
-WHERE od.id_order = ?;
-    `
+WHERE od.id_order = ?
+    `;
+    const params = [id_order];
 
-    return await connect(query, [id_order]);
+    if (customer) {
+      query += ' AND od.customer_id = ?'; // ajusta columna real
+      params.push(customer);
+    }
+
+    return await connect(query, params);
 }
 
 const getRepartosParada = async () => {

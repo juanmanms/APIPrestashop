@@ -128,10 +128,15 @@ router.get('/pedidos-online-vendedor', async (req, res) => {
     res.json(orders);
 })
 
-router.get('/lineas-pedido/:id', async (req, res) => {
-    const { id } = req.params
-    const orders = await getLineasPedido(id);
-    res.json(orders);
+router.get('/lineas-pedido/:id/:customer?', async (req, res) => {
+    const { id, customer } = req.params;
+    try {
+        const orders = await getLineasPedido(id, customer || null);
+        res.json(orders);
+    } catch (err) {
+        console.error('Error lineas pedido:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 })
 
 router.get('/repartos-parada', async (req, res) => {

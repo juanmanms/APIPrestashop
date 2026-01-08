@@ -167,6 +167,8 @@ const getInfoSeller = async () => {
         c.whatsapp AS "Whatsapp",
         c.instagram AS "Instagram",
         c.facebook AS "Facebook",
+        c.web AS "Web",
+        c.nparada AS "N_Parada",
         s.id_seller AS "ID_Vendedor",
         s.name AS "Vendedor",
         sup.id_supplier AS "ID_Proveedor",
