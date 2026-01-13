@@ -3,16 +3,24 @@ const { connect } = require('../controllers/prestashopConector');
 const getClients = async () => {
     const query = `
     SELECT 
-    c.id_customer as id,
-    c.firstname as name,
-    c.lastname as apellidos,
+    c.id_customer AS id,
+    c.firstname AS name,
+    c.lastname AS apellidos,
     c.email,
     c.active,
-    c.date_add
-FROM
-    ps_customer c
-WHERE
-    c.active = 1
+    c.date_add,
+    a.phone AS telefono,
+    a.address1 as dir 
+FROM ps_customer c
+LEFT JOIN ps_address a 
+    ON a.id_customer = c.id_customer
+WHERE c.active = 1
+  AND (a.id_address = (
+      SELECT MAX(a2.id_address)
+      FROM ps_address a2
+      WHERE a2.id_customer = c.id_customer
+  ) OR a.id_address IS NULL)
+ORDER BY c.date_add DESC
     `;
     return await connect(query);
 }
