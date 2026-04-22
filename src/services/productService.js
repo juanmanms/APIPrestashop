@@ -463,9 +463,9 @@ const createProduct = async (id_category, price, id_tax, supplier) => {
     const query = `
     INSERT INTO 
     ps_product 
-    (id_category_default, price, id_tax_rules_group, quantity, active, state, id_supplier)
+    (id_category_default, price, id_tax_rules_group, quantity, active, state, id_supplier, date_add, date_upd)
 VALUES
-    (?, ?, ?, 0, 1, 1, ?);
+    (?, ?, ?, 0, 1, 1, ?, NOW(), NOW());
     `;
     const result = await connect(query, [id_category, price, id_tax, supplier]);
     return result.insertId;
@@ -475,9 +475,9 @@ const createProductShop = async (id_product, id_category, price, id_tax) => {
     const query = `
     INSERT INTO
     ps_product_shop
-    (id_product, id_shop, id_category_default, price, wholesale_price, active, id_tax_rules_group)
+    (id_product, id_shop, id_category_default, price, wholesale_price, active, id_tax_rules_group, date_add, date_upd)
 VALUES
-    (?, 1, ?, ?, 0.00, 1, ?);
+    (?, 1, ?, ?, 0.00, 1, ?, NOW(), NOW());
     `;
     return await connect(query, [id_product, id_category, price, id_tax]);
 }

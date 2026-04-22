@@ -4,7 +4,9 @@
   "description": "Api para prestashop",
   "main": "index.js",
   "scripts": {
-    "dev": "node --env-file .env --watch src/app.js"
+    "dev": "node --env-file .env --watch src/app.js",
+    "docker:dev:up": "docker compose -f docker-compose.dev.yml up --build",
+    "docker:dev:down": "docker compose -f docker-compose.dev.yml down"
   },
   "keywords": [
     "prestashop"

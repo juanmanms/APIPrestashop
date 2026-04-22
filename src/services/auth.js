@@ -35,7 +35,7 @@ AND
     `;
     //si devuelve un resultado, se crea un token con la id del cliente y se devuelve el token y se guarda en la cookie
     const result = await connect(query, [email, password]);
-    if (result.length > 0) {
+    if (Array.isArray(result) && result.length > 0) {
         //en caso de que el email y la contraseña sean correctos, se crea un token y añadir a headers
         const token = jwt.sign({ id: result[0].id_customer }, process.env.cookie_key);
         return token;

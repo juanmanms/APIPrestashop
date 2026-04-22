@@ -9,7 +9,15 @@ router.get('/isSeller/', (req, res) => {
             res.json(result);
         })
         .catch((error) => {
-            res.json(error);
+            if (error && error.code === 'ER_CONNECTION_TIMEOUT') {
+                return res.status(503).json({
+                    message: 'No se puede conectar a la base de datos en este momento.'
+                });
+            }
+
+            return res.status(500).json({
+                message: 'Error interno al validar el vendedor.'
+            });
         });
 });
 
@@ -22,7 +30,15 @@ router.post('/login/', (req, res) => {
             res.json(result);
         })
         .catch((error) => {
-            res.json(error);
+            if (error && error.code === 'ER_CONNECTION_TIMEOUT') {
+                return res.status(503).json({
+                    message: 'Servicio de autenticacion temporalmente no disponible (BD).'
+                });
+            }
+
+            return res.status(500).json({
+                message: 'Error interno en el proceso de login.'
+            });
         });
 });
 

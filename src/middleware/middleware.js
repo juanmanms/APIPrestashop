@@ -20,22 +20,22 @@ const verifyToken = async (req, res, next) => {
             next(); // Pasar al siguiente middleware/controlador
         } catch (error) {
             // En caso de error en la verificación del token
-            res.status(400).send('Token inválido.');
+            return res.status(400).send('Token inválido.');
         }
     } else {
         // const result = await validateToken(token);
         // console.log('result', result[0].id_employee);
         try {
             const result = await validateToken(token);
-            if (result) {
+            if (Array.isArray(result) && result.length > 0) {
                 req.user = result[0].id_employee;
-                next();
+                return next();
             } else {
-                res.status(400).send('Token inválido.');
+                return res.status(401).send('Token inválido.');
             }
         } catch (error) {
             console.log(error);
-            res.status(500).send('Token inválido.');
+            return res.status(503).send('Servicio de autenticación no disponible.');
         }
     }
 };
@@ -49,8 +49,8 @@ const validateToken = async (token) => {
         WHERE
             a.token = ?;
     `
-    const result = await connect(query, token);
-    if (result.length > 0) {
+    const result = await connect(query, [token]);
+    if (Array.isArray(result) && result.length > 0) {
         const expiryDate = new Date(result[0].expiry_date);
         if (expiryDate > new Date()) {
             return result;
@@ -59,6 +59,8 @@ const validateToken = async (token) => {
         }
 
     }
+
+    return false;
 
 }
 

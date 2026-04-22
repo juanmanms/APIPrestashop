@@ -4,26 +4,26 @@ async function connect(query, params) {
     try {
         conn = await mariadb.createConnection({
             host: process.env.Server,
+            port: Number(process.env.DB_PORT || 3306),
             user: process.env.UsuarioDB,
             password: process.env.PasswordDB,
             database: process.env.DB,
+            connectTimeout: Number(process.env.DB_CONNECT_TIMEOUT_MS || 10000),
+            socketTimeout: Number(process.env.DB_SOCKET_TIMEOUT_MS || 10000),
         });
 
         // Use Connection to execute the query
         //si params es null, se ejecuta la query sin parametros
-        if (params == null) {
-            var result = await conn.query(query);
-        } else {
-            var result = await conn.query(query, params);
-        }
+        const result = params == null ? await conn.query(query) : await conn.query(query, params);
 
         return result;
     } catch (err) {
-        // Manage Errors
+        // Propaga el error para que el caller pueda responder apropiadamente.
         console.log(err);
+        throw err;
     } finally {
         // Close Connection
-        if (conn) conn.close();
+        if (conn) await conn.end();
     }
 }
 

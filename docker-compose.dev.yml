@@ -1,0 +1,15 @@
+services:
+  api:
+    container_name: prestashop-api-dev
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm run dev
+    restart: unless-stopped
