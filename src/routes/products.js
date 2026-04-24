@@ -192,10 +192,11 @@ router.post('/add-product', async (req, res) => {
     console.log("vendedor", id);
     try {
         //console.log("Producto: ", id, name, price, taxRate, category[0].id_category);
-        await createProductBySellet(category[0].categoria, netPrice, taxRate, name, name, category[0].vendedor, category[0].proveedor);
-        res.json({ message: 'Product created' });
+        const productId = await createProductBySellet(category[0].categoria, netPrice, taxRate, name, name, category[0].vendedor, category[0].proveedor);
+        res.json({ message: 'Product created', id: productId });
     } catch (error) {
-        res.status(500).json({ message: 'Internal server error' });
+        console.error("Error add-product:", error);
+        res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 });
 

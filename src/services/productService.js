@@ -441,6 +441,7 @@ exports.createProductBySellet = async (id_category, price, id_tax, name, descrip
         throw error;
     }
 
+    
 }
 //obtener la categoria y el suplier v incula da al vendedor
 exports.getCategoryBySeller = async (id) => {
@@ -468,7 +469,7 @@ VALUES
     (?, ?, ?, 0, 1, 1, ?, NOW(), NOW());
     `;
     const result = await connect(query, [id_category, price, id_tax, supplier]);
-    return result.insertId;
+    return Number(result.insertId);
 }
 
 const createProductShop = async (id_product, id_category, price, id_tax) => {
