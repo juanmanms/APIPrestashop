@@ -38,6 +38,14 @@ const corsOptions = {
 
 //autorizar cors
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
+app.use((err, req, res, next) => {
+    if (err && err.message === 'Not allowed by CORS') {
+        return res.status(403).json({ message: 'Origen no permitido por CORS.' });
+    }
+    next(err);
+});
 
 // const categoryRoutes = require('./routes/categories');
 
@@ -58,6 +66,14 @@ app.use('/cms', cmsRoutes);
 //un mensaje de bienvenida en la ruta /
 app.get('/', (req, res) => {
     res.send('Welcome to the API');
+});
+
+app.use((err, req, res, next) => {
+    console.error('Unhandled API error:', err);
+    if (res.headersSent) {
+        return next(err);
+    }
+    res.status(500).json({ message: 'Internal server error' });
 });
 
 app.listen(3000, () => {

@@ -1,7 +1,6 @@
 // routes/products.js
 const express = require('express');
 const router = express.Router();
-const jwt = require('jsonwebtoken');
 const {
     updateProductPrice,
     getProductsBySeller,
@@ -33,14 +32,8 @@ const getIdFromRequest = (req) => req.userId || req.user || null;
 
 
 router.use((req, res, next) => {
-    //req.userId = getIdFromToken(req);
-    const token = req.headers['authorization'];
-    if (token && token.startsWith('eyJ')) {
-        const decoded = jwt.verify(token, process.env.cookie_key);
-        req.userId = decoded.id;
-    } else {
-        req.userId = req.user || null;
-    }
+    // verifyToken ya ha validado y cargado el usuario.
+    req.userId = req.user || null;
     next();
 });
 
