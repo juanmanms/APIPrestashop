@@ -32,7 +32,10 @@ function getImages(tipo = 'horarios') {
     console.log('Directory:', directory);
     return new Promise((resolve, reject) => {
         fs.readdir(directory, (err, files) => {
-            if (err) return reject(err);
+            if (err) {
+                if (err.code === 'ENOENT') return resolve([]);
+                return reject(err);
+            }
             // Filtra solo imágenes (puedes ajustar la expresión regular)
             const images = files.filter(f => /\.(jpg|jpeg|png|gif)$/i.test(f));
             resolve(images);
@@ -45,9 +48,12 @@ function updateImage(file, filename, directory = pat
 ) {
     const destPath = path.join(directory, filename);
     return new Promise((resolve, reject) => {
-        fs.copyFile(file.path, destPath, (err) => {
-            if (err) return reject(err);
-            resolve({ success: true, filename });
+        fs.mkdir(directory, { recursive: true }, (mkdirErr) => {
+            if (mkdirErr) return reject(mkdirErr);
+            fs.copyFile(file.path, destPath, (err) => {
+                if (err) return reject(err);
+                resolve({ success: true, filename });
+            });
         });
     });
 }
@@ -58,7 +64,10 @@ function deleteImage(tipo = 'horarios', filename) {
     const filePath = path.join(directory, filename);
     return new Promise((resolve, reject) => {
         fs.unlink(filePath, (err) => {
-            if (err) return reject(err);
+            if (err) {
+                if (err.code === 'ENOENT') return resolve({ success: true, filename });
+                return reject(err);
+            }
             resolve({ success: true, filename });
         });
     });

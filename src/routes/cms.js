@@ -15,16 +15,26 @@ const {
 // Obtener todos las imagenes de CMS
 
 router.get('/images/:tipo/:id', async (req, res) => {
-    const { tipo, id } = req.params;
-    const fullTipo = `${tipo}/${id}`;
-    const images = await getImages(fullTipo);
-    res.json(images);
+    try {
+        const { tipo, id } = req.params;
+        const fullTipo = `${tipo}/${id}`;
+        const images = await getImages(fullTipo);
+        res.json(images);
+    } catch (error) {
+        console.error('Error obteniendo imagenes CMS (tipo/id):', error);
+        res.status(500).json({ error: 'Error al obtener imagenes', details: error.message });
+    }
 });
 
 router.get('/images/:tipo', async (req, res) => {
-    const { tipo } = req.params;
-    const images = await getImages(tipo);
-    res.json(images);
+    try {
+        const { tipo } = req.params;
+        const images = await getImages(tipo);
+        res.json(images);
+    } catch (error) {
+        console.error('Error obteniendo imagenes CMS (tipo):', error);
+        res.status(500).json({ error: 'Error al obtener imagenes', details: error.message });
+    }
 });
 
 //añadir imagen
