@@ -27,11 +27,7 @@ const {
 const verifyToken = require('../middleware/middleware');
 
 router.use(verifyToken);
-const getIdFromToken = (req) => {
-    const token = req.headers['authorization'];
-    const decoded = jwt.verify(token, process.env.cookie_key);
-    return decoded.id;
-};
+const getIdFromRequest = (req) => req.userId || req.user || null;
 
 
 
@@ -39,18 +35,18 @@ const getIdFromToken = (req) => {
 router.use((req, res, next) => {
     //req.userId = getIdFromToken(req);
     const token = req.headers['authorization'];
-    if (token.startsWith('eyJ')) {
+    if (token && token.startsWith('eyJ')) {
         const decoded = jwt.verify(token, process.env.cookie_key);
         req.userId = decoded.id;
     } else {
-        req.userId = null;
+        req.userId = req.user || null;
     }
     next();
 });
 
 
 router.get('/', async (req, res) => {
-    const id = getIdFromToken(req);
+    const id = getIdFromRequest(req);
     console.log("vendedor", id);
     const sellerProducts = await getProductsNoCombinations(id);
     res.json(sellerProducts);
@@ -71,7 +67,7 @@ router.put('/iva', async (req, res) => {
 });
 
 router.get('/combinations', async (req, res) => {
-    const id = getIdFromToken(req);
+    const id = getIdFromRequest(req);
     console.log("combinaciones", id);
     const sellerProducts = await getCombinations(id);
     res.json(sellerProducts);
@@ -134,10 +130,18 @@ router.delete('/combinations', async (req, res) => {
 });
 
 router.get('/imagenes', async (req, res) => {
-    const id = getIdFromToken(req);
-    console.log("imagenes", id);
-    const sellerProducts = await getImagenes(id);
-    res.json(sellerProducts);
+    try {
+        const id = getIdFromRequest(req);
+        if (!id) {
+            return res.status(401).json({ message: 'Token invalido o no autorizado.' });
+        }
+        console.log("imagenes", id);
+        const sellerProducts = await getImagenes(id);
+        res.json(sellerProducts);
+    } catch (error) {
+        console.error('Error obteniendo imagenes:', error);
+        res.status(500).json({ message: 'No se pudieron obtener las imagenes.' });
+    }
 });
 
 router.delete('/imagenes', async (req, res) => {
@@ -159,7 +163,7 @@ router.post('/productos', async (req, res) => {
 });
 
 router.get('/categorias', async (req, res) => {
-    const id = getIdFromToken(req);
+    const id = getIdFromRequest(req);
     const categories = await getCategories(id);
     res.json(categories);
 });
@@ -186,7 +190,7 @@ router.delete('/categorias-delete-product', async (req, res) => {
 });
 
 router.post('/add-product', async (req, res) => {
-    const id = getIdFromToken(req);
+    const id = getIdFromRequest(req);
     const { name, price, taxRate, netPrice } = req.body
     const category = await getCategoryBySeller(id);
     console.log("vendedor", id);
