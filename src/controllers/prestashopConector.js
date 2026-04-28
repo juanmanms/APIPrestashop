@@ -2,15 +2,24 @@ const mariadb = require("mariadb");
 async function connect(query, params) {
     let conn;
     try {
-        conn = await mariadb.createConnection({
+        const dbConfig = {
             host: process.env.Server,
-            port: Number(process.env.DB_PORT || 3306),
             user: process.env.UsuarioDB,
             password: process.env.PasswordDB,
             database: process.env.DB,
-            connectTimeout: Number(process.env.DB_CONNECT_TIMEOUT_MS || 10000),
-            socketTimeout: Number(process.env.DB_SOCKET_TIMEOUT_MS || 10000),
-        });
+        };
+
+        if (process.env.DB_PORT) {
+            dbConfig.port = Number(process.env.DB_PORT);
+        }
+        if (process.env.DB_CONNECT_TIMEOUT_MS) {
+            dbConfig.connectTimeout = Number(process.env.DB_CONNECT_TIMEOUT_MS);
+        }
+        if (process.env.DB_SOCKET_TIMEOUT_MS) {
+            dbConfig.socketTimeout = Number(process.env.DB_SOCKET_TIMEOUT_MS);
+        }
+
+        conn = await mariadb.createConnection(dbConfig);
 
         // Use Connection to execute the query
         //si params es null, se ejecuta la query sin parametros
