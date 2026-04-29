@@ -280,11 +280,48 @@ const updateCustomerAndAddress = async (customerData, Id) => {
     }
 }
 
+const consultClients = async () => {
+    const query = `
+    SELECT 
+    c.id_customer AS ID,
+    c.firstname AS nombre,
+    c.lastname AS apellidos,
+    c.email AS correo,
+    c.date_add AS fecha_registro,
+    c.active AS activo,
+    
+    COUNT(DISTINCT o.id_order) AS numero_pedidos,
+    COUNT(DISTINCT a.id_address) AS numero_direcciones
+
+FROM ps_customer c
+
+LEFT JOIN ps_orders o 
+    ON o.id_customer = c.id_customer 
+    AND o.valid = 1
+
+LEFT JOIN ps_address a 
+    ON a.id_customer = c.id_customer 
+    AND a.deleted = 0
+
+GROUP BY
+    c.id_customer,
+    c.firstname,
+    c.lastname,
+    c.email,
+    c.date_add,
+    c.active
+
+ORDER BY c.date_add DESC;
+    `;
+    return await connect(query);
+}
+
 
 module.exports = {
     createCustomerAndAddress,
     getClients,
     getAddresses,
     getClientsDuplicateMail,
-    updateCustomerAndAddress
+    updateCustomerAndAddress,
+    consultClients
 };
