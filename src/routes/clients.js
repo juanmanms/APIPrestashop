@@ -6,7 +6,8 @@ const {
     getAddresses,
     createCustomerAndAddress,
     updateCustomerAndAddress,
-    consultClients
+    consultClients,
+    updateCustomerActiveStatus
 } = require('../services/clientsService');
 const { serializeBigInt } = require('../utils');
 
@@ -64,6 +65,20 @@ router.get('/consultaClients', async (req, res) => {
         res.json(serializeBigInt(clients));
     } catch (error) {
         console.error('Error consulting clients:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+router.put('/updateActive/:id', async (req, res) => {
+    const { id } = req.params;
+    const { active } = req.body;
+    if (typeof active !== 'boolean') {
+        return res.status(400).json({ error: 'Invalid active status' });
+    }
+    try {        await updateCustomerActiveStatus(id, active);
+        res.json({ message: 'Client active status updated successfully' });
+    } catch (error) {
+        console.error('Error updating client active status:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });

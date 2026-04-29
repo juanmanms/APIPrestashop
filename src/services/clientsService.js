@@ -316,6 +316,15 @@ ORDER BY c.date_add DESC;
     return await connect(query);
 }
 
+const updateCustomerActiveStatus = async (id, active) => {
+    const query = `
+    UPDATE ps_customer
+    SET active = ?
+    WHERE id_customer = ?
+    `;
+    await connect(query, [active ? 1 : 0, id]);
+}
+
 
 module.exports = {
     createCustomerAndAddress,
@@ -323,5 +332,6 @@ module.exports = {
     getAddresses,
     getClientsDuplicateMail,
     updateCustomerAndAddress,
-    consultClients
+    consultClients,
+    updateCustomerActiveStatus
 };
