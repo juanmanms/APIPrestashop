@@ -484,24 +484,26 @@ VALUES
 }
 
 const createProductLang = async (id_product, name, description) => {
+    const url = sanitizeUrl(name);
+    
     const query = `
     INSERT INTO
     ps_product_lang
-    (id_product, id_shop, id_lang, name, description)
+    (id_product, id_shop, id_lang, name, description, link_rewrite)
 VALUES
-    (?, 1, 2, ?, ?);
+    (?, 1, 2, ?, ?, ?);
     `;
 
     const query2 = `
     INSERT INTO
     ps_product_lang
-    (id_product, id_shop, id_lang, name, description)
+    (id_product, id_shop, id_lang, name, description, link_rewrite)
 VALUES
-    (?, 1, 1, ?, ?);
+    (?, 1, 1, ?, ?, ?);
     `;
-    await connect(query2, [id_product, name, description]);
+    await connect(query2, [id_product, name, description, url]);
 
-    return await connect(query, [id_product, name, description]);
+    return await connect(query, [id_product, name, description, url]);
 }
 
 const createSellerProduct = async (id_seller, id_product) => {
@@ -594,6 +596,17 @@ WHERE
     await connect(query, [id_product]);
     return await connect(queryShop, [process.env.category_descart, id_product]);
 }
+
+const sanitizeUrl = (str) => {
+        return str
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-+|-+$/g, '');
+    };
 
 exports.changeAttributeCombination = async (id_product, id_attribute) => {
     const query = `
