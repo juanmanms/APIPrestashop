@@ -137,41 +137,130 @@ const createPsOrder = async (priced, id_carrier, id_customer, id_cart, id_addres
 
     const insertQuery = `
     INSERT INTO ps_orders (
-    reference, id_shop_group, id_shop, id_carrier, id_lang, id_customer, id_cart,
-    id_currency, id_address_delivery, id_address_invoice, current_state, secure_key,
-    payment, conversion_rate, module, recyclable, gift, gift_message, mobile_theme,
-    shipping_number, total_discounts, total_discounts_tax_incl, total_discounts_tax_excl,
-    total_paid, total_paid_tax_incl, total_paid_tax_excl, total_paid_real, total_products,
-    total_products_wt, total_shipping, total_shipping_tax_incl, total_shipping_tax_excl,
-    carrier_tax_rate, total_wrapping, total_wrapping_tax_incl, total_wrapping_tax_excl,
-    payment_cost_amount, payment_cost_percent, round_mode, round_type, invoice_number,
-    delivery_number, invoice_date, delivery_date, valid, date_add, date_upd,
-    ddw_order_date, ddw_order_time, forma_pago
+    reference,
+    id_shop_group,
+    id_shop,
+    id_carrier,
+    id_lang,
+    id_customer,
+    id_cart,
+    id_currency,
+    id_address_delivery,
+    id_address_invoice,
+    current_state,
+    secure_key,
+    payment,
+    conversion_rate,
+    module,
+    recyclable,
+    gift,
+    gift_message,
+    mobile_theme,
+    shipping_number,
+    total_discounts,
+    total_discounts_tax_incl,
+    total_discounts_tax_excl,
+    total_paid,
+    total_paid_tax_incl,
+    total_paid_tax_excl,
+    total_paid_real,
+    total_products,
+    total_products_wt,
+    total_shipping,
+    total_shipping_tax_incl,
+    total_shipping_tax_excl,
+    carrier_tax_rate,
+    total_wrapping,
+    total_wrapping_tax_incl,
+    total_wrapping_tax_excl,
+    payment_cost_amount,
+    payment_cost_percent,
+    round_mode,
+    round_type,
+    invoice_number,
+    delivery_number,
+    invoice_date,
+    delivery_date,
+    valid,
+    date_add,
+    date_upd,
+    ddw_order_date,
+    ddw_order_time,
+    forma_pago
 ) VALUES (
-    ?, 1, 1, ?, 2, ?, ?, 1, ?, ?, 22, '249d5ebf23b3af8c42df428a4f03305c',
-    'Contra reemborsament (COD)', 1.000000, 'ps_cashondelivery', 0, 0, NULL, 0, NULL,
-    0.000000, 0.000000, 0.000000, ?, ?, ?, 0.000000, ?, ?, ?, ?, ?, 21.000, 0.000000,
-    0.000000, 0.000000, 0, 0, 2, 2, 0, 0, NOW(), NOW(), 1, NOW(), NOW(), ?, NULL, ?
-)`;
+    ?,
+    1,
+    1,
+    ?,
+    2,
+    ?,
+    ?,
+    1,
+    ?,
+    ?,
+    22,
+    '249d5ebf23b3af8c42df428a4f03305c',
+    'Contra reemborsament (COD)',
+    1.000000,
+    'ps_cashondelivery',
+    0,
+    0,
+    NULL,
+    0,
+    NULL,
+    0.000000,
+    0.000000,
+    0.000000,
+    ?,
+    ?,
+    ?,
+    0.000000,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    21.000,
+    0.000000,
+    0.000000,
+    0.000000,
+    0,
+    0,
+    2,
+    2,
+    0,
+    0,
+    NOW(),
+    NOW(),
+    1,
+    NOW(),
+    NOW(),
+    ?,
+    NULL,
+    ?
+);
+
+    `;
 
     try {
-        // SIN START TRANSACTION aquí (manejado por padre)
+        await connect("Start transaction");
+        console.log("Transaction started");
+
         const insertResult = await connect(insertQuery, [reference, id_carrier, id_customer, Number(id_cart), id_address, id_address, total_tax, total_tax, total, price, price, envio_tax, envio_tax, envio, date, payment]);
-        console.log("Order created with ID:", insertResult.insertId);
+
+        console.log("Order created");
+
         return Number(insertResult.insertId);
     } catch (error) {
-        console.error("Error creating order:", error);
-        throw error;  // Propagar para que el padre lo capture y haga ROLLBACK
+        await connect("rollback");
+        console.log("Transaction rolled back");
+        throw error;
     }
 }
 
 const createPsOrderDetail = async (id_order, id_product, product_price) => {
-    // Validar que el producto existe ANTES de la transacción
     const product_name = await getProductName(id_product);
-    
-    if (!Array.isArray(product_name) || product_name.length === 0) {
-        throw new Error(`Producto ${id_product} no encontrado en idioma 2`);
-    }
+    console.log(product_name[0].name);
 
     const insertQuery = `
     INSERT INTO ps_order_detail (
@@ -190,29 +279,37 @@ const createPsOrderDetail = async (id_order, id_product, product_price) => {
     unit_price_tax_excl
 ) 
 VALUES (
-    ?,
-    1,
-    ?,
-    ?,
-    1,
-    ?,
-    0,
-    'IVA',
-    0,
-    ?,
-    ?,
-    ?,
-    ?
-)`;
+    ?,               -- id_order (ID del pedido al que pertenece este detalle)
+    1,                  -- id_shop (ID de la tienda)
+    ?,                -- product_id (ID del producto)
+    ?,     -- product_name (Nombre del producto)
+    1,                  -- product_quantity (Cantidad de productos)
+    ?,              -- product_price (Precio unitario del producto, sin impuestos)
+    0,              -- product_weight (Peso del producto)
+    'IVA',              -- tax_name (Nombre del impuesto aplicado)
+    0,             -- tax_rate (Tasa de impuesto en porcentaje)
+    ?,              -- total_price_tax_incl (Precio total con impuestos)
+    ?,              -- total_price_tax_excl (Precio total sin impuestos)
+    ?,              -- unit_price_tax_incl (Precio unitario con impuestos)
+    ?               -- unit_price_tax_excl (Precio unitario sin impuestos)
+);
+    `;
 
-    // SIN START TRANSACTION aquí (ya está en el padre createPsCart)
     try {
+        await connect("Start transaction");
+        console.log("Transaction started");
+
         await connect(insertQuery, [id_order, id_product, product_name[0].name, product_price, product_price, product_price, product_price, product_price]);
+
         console.log("Order detail created");
+
     } catch (error) {
-        console.error("Error creating order detail:", error);
-        throw error;  // Propagar para que el padre lo capture y haga ROLLBACK
+        await connect("rollback");
+        console.log("Transaction rolled back");
+        throw error;
     }
+
+
 }
 
 const getProductName = async (id_product) => {
@@ -285,53 +382,103 @@ ORDER BY
 const createOrderCarrier = async (order, carrier) => {
     const query = `
         INSERT INTO ps_order_carrier
-        (id_order, id_carrier, id_order_invoice, weight, shipping_cost_tax_excl, 
-         shipping_cost_tax_incl, tracking_number, date_add)
-        VALUES (?, ?, 0, 0, '', '', '', NOW())
+        (
+            id_order, 
+            id_carrier, 
+            id_order_invoice, 
+            weight, 
+            shipping_cost_tax_excl, 
+            shipping_cost_tax_incl, 
+            tracking_number, 
+            date_add
+        ) VALUES ( 
+            ?, 
+            ?, 
+            0, 
+            0, 
+            '', 
+            '', 
+            '', 
+            NOW()
+        );
     `;
 
     try {
-        // SIN START TRANSACTION aquí
+        await connect("Start transaction");
+        console.log("Transaction started");
+
         await connect(query, [order, carrier]);
+
         console.log("Order carrier created");
     } catch (error) {
-        console.error("Error creating order carrier:", error);
+        await connect("rollback");
+        console.log("Transaction rolled back");
         throw error;
     }
 }
 
 const createOrderHistory = async (order, state) => {
-    const query = `
-    INSERT INTO ps_order_history (id_employee, id_order, id_order_state, date_add)
-    VALUES (2, ?, ?, NOW())
-    `;
+    query = `
+    INSERT INTO ps_order_history (
+        id_employee,
+        id_order,
+        id_order_state,
+        date_add
+    ) VALUES (
+        2, 
+        ?, 
+        ?, 
+        NOW()
+    )`;
 
     try {
-        // SIN START TRANSACTION aquí
+        connect("Start transaction");
+        console.log("Transaction started");
+
         await connect(query, [order, state]);
-        console.log("Order history created");
+
     } catch (error) {
-        console.error("Error creating order history:", error);
+        await connect("rollback");
+        console.log("Transaction rolled back");
         throw error;
     }
+
+
 }
 
 const cancelOrder = async (order) => {
-    const queryInsert = `
-    INSERT INTO ps_order_history (id_employee, id_order, id_order_state, date_add)
-    VALUES (2, ?, 6, NOW())
-    `;
+    query = `
+    INSERT INTO ps_order_history (
+        id_employee,
+        id_order,
+        id_order_state,
+        date_add
+    ) VALUES (
+        2, 
+        ?, 
+        6, 
+        NOW()
+    )`;
 
-    const queryUpdate = `UPDATE ps_orders SET current_state = 6 WHERE id_order = ?`;
+    queryUpdate = `
+    UPDATE ps_orders 
+    SET current_state = 6 
+    WHERE id_order = ?
+    `
 
     try {
-        await connect(queryInsert, [order]);
+        connect("Start transaction");
+        console.log("Transaction started");
+
+        await connect(query, [order]);
         await connect(queryUpdate, [order]);
-        console.log("Order cancelled");
+
     } catch (error) {
-        console.error("Error cancelling order:", error);
+        await connect("rollback");
+        console.log("Transaction rolled back");
         throw error;
     }
+
 }
 
 const getRepartos = async () => {
@@ -348,27 +495,8 @@ const getRepartos = async () => {
     COUNT(ord.id_order) AS 'Pedidos',
     GROUP_CONCAT(ord.id_order ORDER BY ord.id_order ASC SEPARATOR ', ') AS 'IDsPedidos',
     ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) AS 'TotalCompra',
-    IF(
-        ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) > 75.00, 
-        "0.00",
-        CASE 
-            WHEN id_carrier IN (7, 11, 12, 13, 14, 17, 18) THEN "4.00"
-            WHEN id_carrier IN (9, 15, 19) THEN "6.00"
-            WHEN id_carrier IN (10, 16, 20, 21) THEN "4.00"
-            ELSE "4.00"
-        END
-    ) AS 'CosteTransporte',
-    ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) + 
-    IF(
-        ROUND(SUM(IFNULL(ord.total_products_wt, 0)), 2) > 75.00, 
-        "0.00",
-        CASE 
-            WHEN id_carrier IN (7, 11, 12, 13, 14, 17, 18) THEN "4.00"
-            WHEN id_carrier IN (9, 15, 19) THEN "6.00"
-            WHEN id_carrier IN (10, 16, 20, 21) THEN "4.00"
-            ELSE "4.00"
-        END
-    ) AS 'TotalPagarCliente',
+    SUM(IFNULL(ord.total_shipping, 0) - IFNULL(ord.total_discounts, 0)) AS 'CosteTransporte',
+    ROUND(SUM(IFNULL(ord.total_paid, 0)), 2)  AS 'TotalPagarCliente',
     SUM(IFNULL(ord.total_shipping, 0) - IFNULL(ord.total_discounts, 0)) AS 'TransporteMenosDescuentos',
     -- Lógica para forma de pago
     CASE 
@@ -492,7 +620,7 @@ WHERE
 ORDER BY
     ord.ddw_order_date DESC, ord.id_order DESC
 limit 100;
-    `
+    `;
 
     const results = await connect(query);
 
@@ -630,35 +758,59 @@ ORDER BY
 }
 
 const changeStateOrder = async (order, state) => {
-    const queryInsert = `
-    INSERT INTO ps_order_history (id_employee, id_order, id_order_state, date_add)
-    VALUES (2, ?, ?, NOW())
-    `;
+    query = `
+    INSERT INTO ps_order_history (
+        id_employee,
+        id_order,
+        id_order_state,
+        date_add
+    ) VALUES (
+        2, 
+        ?, 
+        ?, 
+        NOW()
+    )`;
 
-    const queryUpdate = `
-    UPDATE ps_orders SET current_state = ? WHERE id_order = ?
-    `;
+    queryUpdate = `
+    UPDATE ps_orders 
+    SET current_state = ? 
+    WHERE id_order = ?
+    `
 
     try {
-        await connect(queryInsert, [order, state]);
+        connect("Start transaction");
+        console.log("Transaction started");
+
+        await connect(query, [order, state]);
         await connect(queryUpdate, [state, order]);
-        console.log("Order state changed");
+
     } catch (error) {
-        console.error("Error changing order state:", error);
+        await connect("rollback");
+        console.log("Transaction rolled back");
         throw error;
     }
+
 }
 
 const changeFormaPago = async (order, forma_pago) => {
-    const query = `UPDATE ps_orders SET forma_pago = ? WHERE id_order = ?`;
+    query = `
+    UPDATE ps_orders 
+    SET forma_pago = ? 
+    WHERE id_order = ?
+    `
 
     try {
+        connect("Start transaction");
+        console.log("Transaction started");
+
         await connect(query, [forma_pago, order]);
-        console.log("Payment method changed");
+
     } catch (error) {
-        console.error("Error changing payment method:", error);
+        await connect("rollback");
+        console.log("Transaction rolled back");
         throw error;
     }
+
 }
 
 const getPedidosOnline = async () => {
@@ -705,7 +857,7 @@ const getPedidosOnlineVendedor = async (id_seller) => {
     CONCAT(c.firstname, ' ', c.lastname) AS "Cliente",
     car.name AS "Transportista",
     o.total_shipping_tax_incl AS "TotalEnvíoconIVA",
-    o.total_products_wt AS "TotalSinIva",
+    o.total_paid_tax_excl AS "TotalSinIva",
     o.total_paid_tax_incl AS "TotalPagadoconIVA",
     o.current_state AS "EstadoPedido"
 FROM ps_seller_order so
