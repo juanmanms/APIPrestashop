@@ -1,4 +1,4 @@
-const { connect } = require('../controllers/prestashopConector');
+const { connect, getConnection, connectWithConn } = require('../controllers/prestashopConector');
 
 const getClients = async () => {
     const query = `
@@ -149,12 +149,13 @@ const createCustomerAndAddress = async (customerData) => {
     )`;
 
 
+    const conn = await getConnection();
     try {
-        await connect("START TRANSACTION");
+        await conn.beginTransaction();
         console.log("Transaction started");
 
         // Insert customer
-        const customerResult = await connect(queryInsertCustomer, [
+        const customerResult = await connectWithConn(conn, queryInsertCustomer, [
             Number(gender),
             firstname,
             lastname,
@@ -167,7 +168,7 @@ const createCustomerAndAddress = async (customerData) => {
         console.log("Customer created with ID:", customerId);
 
         // Insert address
-        await connect(queryInsertAddress, [
+        await connectWithConn(conn, queryInsertAddress, [
             customerId,
             id_country,
             id_state,
@@ -182,15 +183,16 @@ const createCustomerAndAddress = async (customerData) => {
         ]);
         console.log("Address created for customer ID:", customerId);
 
-        await connect("COMMIT");
+        await conn.commit();
         console.log("Transaction committed");
 
         return customerId;
     } catch (error) {
-        // Rollback transaction on error
-        await connect("ROLLBACK");
+        await conn.rollback();
         console.error("Transaction rolled back due to error:", error);
         throw error;
+    } finally {
+        await conn.end();
     }
 };
 
@@ -241,12 +243,13 @@ const updateCustomerAndAddress = async (customerData, Id) => {
         id_customer = ?
     `;
 
+    const conn = await getConnection();
     try {
-        await connect("START TRANSACTION");
+        await conn.beginTransaction();
         console.log("Transaction started");
 
         // Update customer
-        await connect(queryUpdateCustomer, [
+        await connectWithConn(conn, queryUpdateCustomer, [
             firstname,
             lastname,
             email,
@@ -255,7 +258,7 @@ const updateCustomerAndAddress = async (customerData, Id) => {
         console.log("Customer updated with ID:", id_customer);
 
         // Update address
-        await connect(queryUpdateAddress, [
+        await connectWithConn(conn, queryUpdateAddress, [
             id_country,
             id_state,
             alias,
@@ -270,13 +273,14 @@ const updateCustomerAndAddress = async (customerData, Id) => {
         ]);
         console.log("Address updated for customer ID:", id_customer);
 
-        await connect("COMMIT");
+        await conn.commit();
         console.log("Transaction committed");
     } catch (error) {
-        // Rollback transaction on error
-        await connect("ROLLBACK");
+        await conn.rollback();
         console.error("Transaction rolled back due to error:", error);
         throw error;
+    } finally {
+        await conn.end();
     }
 }
 
