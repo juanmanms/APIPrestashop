@@ -1,4 +1,4 @@
-const { connect } = require('../controllers/prestashopConector');
+const { connect, getConnection, connectWithConn } = require('../controllers/prestashopConector');
 
 const getProductComandaBySeller = async (id) => {
     const query = `
@@ -36,50 +36,53 @@ const createPsCart = async (id_customer, id_carrier, id_address, product, price,
             DATE_ADD(NOW(), INTERVAL 1 DAY), ''
         )`;
 
+    const conn = await getConnection();
     try {
-        await connect("START TRANSACTION");
+        await conn.beginTransaction();
         console.log("Transaction started");
 
         // Insert cart
-        const insertResult = await connect(insertQuery, [id_carrier, id_address, id_address, id_customer]);
+        const insertResult = await connectWithConn(conn, insertQuery, [id_carrier, id_address, id_address, id_customer]);
         const cartId = Number(insertResult.insertId);
         console.log("Cart created with ID:", cartId);
 
         // Add product to cart
-        await createPsCartProduct(cartId, product);
+        await createPsCartProduct(conn, cartId, product);
         console.log("Product added to cart:", product);
 
         // Create order
-        const idOrder = await createPsOrder(price, id_carrier, id_customer, cartId, id_address, date, payment);
+        const idOrder = await createPsOrder(conn, price, id_carrier, id_customer, cartId, id_address, date, payment);
         console.log("Order created with ID:", idOrder);
 
         // Create order details
-        await createPsOrderDetail(idOrder, product, price);
+        await createPsOrderDetail(conn, idOrder, product, price);
         console.log("Order details created for order ID:", idOrder);
 
         // Create order carrier
-        await createOrderCarrier(idOrder, id_carrier);
+        await createOrderCarrier(conn, idOrder, id_carrier);
         console.log("Order carrier added for order ID:", idOrder);
 
         // Update order history
-        await createOrderHistory(idOrder, 22);
+        await createOrderHistory(conn, idOrder, 22);
         console.log("Order history updated for order ID:", idOrder);
 
         // Commit transaction
-        await connect("COMMIT");
+        await conn.commit();
         console.log("Transaction committed");
 
         return idOrder;
     } catch (error) {
         // Rollback transaction on error
-        await connect("ROLLBACK");
+        await conn.rollback();
         console.error("Transaction rolled back due to error:", error);
         throw error;
+    } finally {
+        await conn.end();
     }
 
 }
 
-const createPsCartProduct = async (id_cart, id_product) => {
+const createPsCartProduct = async (conn, id_cart, id_product) => {
     const query = `
     INSERT INTO ps_cart_product (
         id_cart, 
@@ -100,7 +103,7 @@ const createPsCartProduct = async (id_cart, id_product) => {
         1, 
         NOW()
     )`;
-    return await connect(query, [id_cart, id_product]);
+    return await connectWithConn(conn, query, [id_cart, id_product]);
 }
 
 const calc_env_tax = (transportista, price) => {
@@ -127,7 +130,7 @@ const calc_env = (transportista, price) => {
 
 }
 
-const createPsOrder = async (priced, id_carrier, id_customer, id_cart, id_address, date, payment) => {
+const createPsOrder = async (conn, priced, id_carrier, id_customer, id_cart, id_address, date, payment) => {
     const price = Number(priced);
     const reference = generateRandomCode();
     const envio_tax = calc_env_tax(id_carrier, price);
@@ -242,24 +245,16 @@ const createPsOrder = async (priced, id_carrier, id_customer, id_cart, id_addres
 
     `;
 
-    try {
-        await connect("Start transaction");
-        console.log("Transaction started");
-
-        const insertResult = await connect(insertQuery, [reference, id_carrier, id_customer, Number(id_cart), id_address, id_address, total_tax, total_tax, total, price, price, envio_tax, envio_tax, envio, date, payment]);
-
-        console.log("Order created");
-
-        return Number(insertResult.insertId);
-    } catch (error) {
-        await connect("rollback");
-        console.log("Transaction rolled back");
-        throw error;
-    }
+    const insertResult = await connectWithConn(conn, insertQuery, [reference, id_carrier, id_customer, Number(id_cart), id_address, id_address, total_tax, total_tax, total, price, price, envio_tax, envio_tax, envio, date, payment]);
+    console.log("Order created");
+    return Number(insertResult.insertId);
 }
 
-const createPsOrderDetail = async (id_order, id_product, product_price) => {
+const createPsOrderDetail = async (conn, id_order, id_product, product_price) => {
     const product_name = await getProductName(id_product);
+    if (!product_name || product_name.length === 0) {
+        throw new Error(`Producto ${id_product} no encontrado en ps_product_lang`);
+    }
     console.log(product_name[0].name);
 
     const insertQuery = `
@@ -295,21 +290,8 @@ VALUES (
 );
     `;
 
-    try {
-        await connect("Start transaction");
-        console.log("Transaction started");
-
-        await connect(insertQuery, [id_order, id_product, product_name[0].name, product_price, product_price, product_price, product_price, product_price]);
-
-        console.log("Order detail created");
-
-    } catch (error) {
-        await connect("rollback");
-        console.log("Transaction rolled back");
-        throw error;
-    }
-
-
+    await connectWithConn(conn, insertQuery, [id_order, id_product, product_name[0].name, product_price, product_price, product_price, product_price, product_price]);
+    console.log("Order detail created");
 }
 
 const getProductName = async (id_product) => {
@@ -379,7 +361,7 @@ ORDER BY
     return await connect(query, [id_seller]);
 }
 
-const createOrderCarrier = async (order, carrier) => {
+const createOrderCarrier = async (conn, order, carrier) => {
     const query = `
         INSERT INTO ps_order_carrier
         (
@@ -402,23 +384,12 @@ const createOrderCarrier = async (order, carrier) => {
             NOW()
         );
     `;
-
-    try {
-        await connect("Start transaction");
-        console.log("Transaction started");
-
-        await connect(query, [order, carrier]);
-
-        console.log("Order carrier created");
-    } catch (error) {
-        await connect("rollback");
-        console.log("Transaction rolled back");
-        throw error;
-    }
+    await connectWithConn(conn, query, [order, carrier]);
+    console.log("Order carrier created");
 }
 
-const createOrderHistory = async (order, state) => {
-    query = `
+const createOrderHistory = async (conn, order, state) => {
+    const query = `
     INSERT INTO ps_order_history (
         id_employee,
         id_order,
@@ -430,24 +401,11 @@ const createOrderHistory = async (order, state) => {
         ?, 
         NOW()
     )`;
-
-    try {
-        connect("Start transaction");
-        console.log("Transaction started");
-
-        await connect(query, [order, state]);
-
-    } catch (error) {
-        await connect("rollback");
-        console.log("Transaction rolled back");
-        throw error;
-    }
-
-
+    await connectWithConn(conn, query, [order, state]);
 }
 
 const cancelOrder = async (order) => {
-    query = `
+    const query = `
     INSERT INTO ps_order_history (
         id_employee,
         id_order,
@@ -460,25 +418,24 @@ const cancelOrder = async (order) => {
         NOW()
     )`;
 
-    queryUpdate = `
+    const queryUpdate = `
     UPDATE ps_orders 
     SET current_state = 6 
     WHERE id_order = ?
-    `
+    `;
 
+    const conn = await getConnection();
     try {
-        connect("Start transaction");
-        console.log("Transaction started");
-
-        await connect(query, [order]);
-        await connect(queryUpdate, [order]);
-
+        await conn.beginTransaction();
+        await connectWithConn(conn, query, [order]);
+        await connectWithConn(conn, queryUpdate, [order]);
+        await conn.commit();
     } catch (error) {
-        await connect("rollback");
-        console.log("Transaction rolled back");
+        await conn.rollback();
         throw error;
+    } finally {
+        await conn.end();
     }
-
 }
 
 const getRepartos = async () => {
@@ -758,7 +715,7 @@ ORDER BY
 }
 
 const changeStateOrder = async (order, state) => {
-    query = `
+    const query = `
     INSERT INTO ps_order_history (
         id_employee,
         id_order,
@@ -771,46 +728,34 @@ const changeStateOrder = async (order, state) => {
         NOW()
     )`;
 
-    queryUpdate = `
+    const queryUpdate = `
     UPDATE ps_orders 
     SET current_state = ? 
     WHERE id_order = ?
-    `
+    `;
 
+    const conn = await getConnection();
     try {
-        connect("Start transaction");
-        console.log("Transaction started");
-
-        await connect(query, [order, state]);
-        await connect(queryUpdate, [state, order]);
-
+        await conn.beginTransaction();
+        await connectWithConn(conn, query, [order, state]);
+        await connectWithConn(conn, queryUpdate, [state, order]);
+        await conn.commit();
     } catch (error) {
-        await connect("rollback");
-        console.log("Transaction rolled back");
+        await conn.rollback();
         throw error;
+    } finally {
+        await conn.end();
     }
 
 }
 
 const changeFormaPago = async (order, forma_pago) => {
-    query = `
+    const query = `
     UPDATE ps_orders 
     SET forma_pago = ? 
     WHERE id_order = ?
-    `
-
-    try {
-        connect("Start transaction");
-        console.log("Transaction started");
-
-        await connect(query, [forma_pago, order]);
-
-    } catch (error) {
-        await connect("rollback");
-        console.log("Transaction rolled back");
-        throw error;
-    }
-
+    `;
+    await connect(query, [forma_pago, order]);
 }
 
 const getPedidosOnline = async () => {
