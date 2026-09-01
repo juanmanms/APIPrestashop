@@ -541,6 +541,12 @@ VALUES
 
 exports.descatalogProduct = async (id_product) => {
     try {
+        // Verificar si el producto es un producto especial (comanda)
+        const productName = await getProductName(id_product);
+        if (productName && productName.toLowerCase().startsWith('comanda')) {
+            throw new Error('No se puede descatalogar un producto de comanda. Este es un producto especial del sistema.');
+        }
+
         await deleteProductSeller(id_product);
         await deleteCategoryProduct(id_product);
         await descatalogCategoryProduct(id_product);
@@ -560,6 +566,20 @@ WHERE
     id_product = ?
     `;
     return await connect(query, [id_product]);
+}
+
+const getProductName = async (id_product) => {
+    const query = `
+    SELECT pl.name
+    FROM ps_product_lang pl
+    WHERE pl.id_product = ? AND pl.id_lang = 2
+    LIMIT 1
+    `;
+    const result = await connect(query, [id_product]);
+    if (result && result.length > 0) {
+        return result[0].name;
+    }
+    return null;
 }
 
 const descatalogCategoryProduct = async (id_product) => {

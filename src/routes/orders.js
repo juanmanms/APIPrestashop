@@ -49,9 +49,17 @@ router.get('/', (req, res) => {
 });
 
 router.get('/comanda', async (req, res) => {
-    const id = getIdFromToken(req);
-    const comanda = await getProductComandaBySeller(id);
-    res.json(comanda[0].id_product);
+    try {
+        const id = getIdFromToken(req);
+        const comanda = await getProductComandaBySeller(id);
+        if (!comanda || comanda.length === 0) {
+            return res.status(404).json({ error: 'No se encontró producto comanda para este vendedor' });
+        }
+        res.json(comanda[0].id_product);
+    } catch (error) {
+        console.error('Error en /comanda:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 router.post('/cart', async (req, res) => {
