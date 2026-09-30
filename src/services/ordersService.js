@@ -831,6 +831,18 @@ const getLineasPedido = async (id_order, customer = null) => {
       SELECT 
     od.product_id AS "IDProducto",
     pl.name AS "NombreProducto",
+    od.product_attribute_id AS "IDAtributo",
+    CASE WHEN od.product_attribute_id > 0 THEN 1 ELSE 0 END AS "TieneAtributo",
+    (
+        SELECT GROUP_CONCAT(al.name ORDER BY a.position SEPARATOR ', ')
+        FROM ps_product_attribute_combination pac
+        INNER JOIN ps_attribute a
+            ON pac.id_attribute = a.id_attribute
+        INNER JOIN ps_attribute_lang al
+            ON a.id_attribute = al.id_attribute
+            AND al.id_lang = 2
+        WHERE pac.id_product_attribute = od.product_attribute_id
+    ) AS "Atributos",
     s.name AS "Vendedor",
     od.product_quantity AS "Cantidad",
     od.product_price AS "PrecioUnitario",
