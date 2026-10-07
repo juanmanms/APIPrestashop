@@ -474,9 +474,9 @@ WHERE
     AND ord.id_shop = 1
     AND ord.ddw_order_date BETWEEN DATE_SUB(NOW(), INTERVAL 31 DAY) AND NOW()
 GROUP BY 
-    ord.id_customer
+    DATE(ord.ddw_order_date), ord.id_customer
 ORDER BY 
-    ord.id_customer ASC;
+    DATE(ord.ddw_order_date) ASC, ord.id_customer ASC;
     `
 
     const results = await connect(query);
@@ -645,9 +645,9 @@ WHERE
     AND ord.id_shop = 1
     AND ord.ddw_order_date > NOW()
 GROUP BY 
-    ord.id_customer
+    DATE(ord.ddw_order_date), ord.id_customer
 ORDER BY 
-    ord.id_customer ASC;
+    DATE(ord.ddw_order_date) ASC, ord.id_customer ASC;
     `
 
     const results = await connect(query);
