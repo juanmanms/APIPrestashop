@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const jwt = require('jsonwebtoken');
 
 const {
     getProductComandaBySeller,
@@ -24,24 +23,7 @@ const {
 const verifyToken = require('../middleware/middleware');
 
 router.use(verifyToken);
-const getIdFromToken = (req) => {
-    const token = req.headers['authorization'];
-    const decoded = jwt.verify(token, process.env.cookie_key);
-    return decoded.id;
-};
-
-
-router.use((req, res, next) => {
-    //req.userId = getIdFromToken(req);
-    const token = req.headers['authorization'];
-    if (token.startsWith('eyJ')) {
-        const decoded = jwt.verify(token, process.env.cookie_key);
-        req.userId = decoded.id;
-    } else {
-        req.userId = null;
-    }
-    next();
-});
+const getIdFromRequest = (req) => req.user;
 
 
 router.get('/', (req, res) => {
@@ -50,7 +32,7 @@ router.get('/', (req, res) => {
 
 router.get('/comanda', async (req, res) => {
     try {
-        const id = getIdFromToken(req);
+        const id = getIdFromRequest(req);
         const comanda = await getProductComandaBySeller(id);
         if (!comanda || comanda.length === 0) {
             return res.status(404).json({ error: 'No se encontró producto comanda para este vendedor' });
@@ -81,7 +63,7 @@ router.post('/cancel', async (req, res) => {
 });
 
 router.get('/orders', async (req, res) => {
-    const id = getIdFromToken(req);
+    const id = getIdFromRequest(req);
     const orders = await getPedidos(id);
     res.json(orders);
 })
@@ -131,7 +113,7 @@ router.get('/pedidos-online', async (req, res) => {
 })
 
 router.get('/pedidos-online-vendedor', async (req, res) => {
-    const id = getIdFromToken(req);
+    const id = getIdFromRequest(req);
     const orders = await getPedidosOnlineVendedor(id);
     res.json(orders);
 })

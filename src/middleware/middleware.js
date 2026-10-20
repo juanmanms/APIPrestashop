@@ -5,10 +5,11 @@ const { connect } = require('../controllers/prestashopConector');
 
 // Middleware para verificar el token
 const verifyToken = async (req, res, next) => {
-    // Obtener el token del header de la solicitud
-    const token = req.headers['authorization'];
-    if (!token) return res.status(403).send('Acceso denegado. No se proporcionó token.');
+    const authorization = req.headers['authorization'];
+    if (!authorization) return res.status(403).send('Acceso denegado. No se proporcionó token.');
 
+    const token = authorization.replace(/^Bearer\s+/i, '').trim();
+    if (!token) return res.status(403).send('Acceso denegado. No se proporcionó token.');
 
     if (token.startsWith('eyJ')) {
         try {
