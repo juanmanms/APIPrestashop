@@ -5,8 +5,18 @@ const { getRepartos, updateActiveDay, getCarrier, updateEndTime, updateStartTime
 
 router.get('/', async (req, res) => {
     console.log("Obteniendo días derepartos");
-    const orders = await getRepartos();
-    res.json(orders);
+    try {
+        const orders = await getRepartos();
+        res.json(orders);
+    } catch (error) {
+        if (error && error.code === 'ER_NO_SUCH_TABLE') {
+            console.warn('No existe la tabla de días de reparto; se devuelve una lista vacía.');
+            return res.json([]);
+        }
+
+        console.error('Error obteniendo días de reparto:', error);
+        return res.status(500).json({ message: 'No se pudieron obtener los días de reparto.' });
+    }
 });
 
 router.put('/activo/:id', async (req, res) => {
