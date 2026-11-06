@@ -9,7 +9,8 @@ const {
     getProductosSinFoto,
     getProductsSinCategoria,
     getInfoSeller,
-    getTotales
+    getTotales,
+    getClientesEntregadosPorAnyo
 } = require('../services/utilidadesService');
 
 router.get('/payment-methods', async (req, res) => {
@@ -89,6 +90,21 @@ router.get('/totales-repartos/:year', async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: "Error al obtener totales" });
+    }
+});
+
+router.get('/clientes-entregados-por-ano/:year', async (req, res) => {
+    const { year } = req.params;
+    if (!/^\d{4}$/.test(year)) {
+        return res.status(400).json({ error: "El año debe tener cuatro dígitos" });
+    }
+
+    try {
+        const clientes = await getClientesEntregadosPorAnyo(year);
+        res.json(clientes);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Error al obtener clientes con pedidos entregados" });
     }
 });
 

@@ -223,6 +223,21 @@ const getTotales = async (year) => {
     return serializedResults;
 }
 
+const getClientesEntregadosPorAnyo = async (year) => {
+    const query = `
+        SELECT
+            YEAR(ord.ddw_order_date) AS year,
+            COUNT(DISTINCT ord.id_customer) AS clientes
+        FROM ps_orders ord
+        WHERE ord.current_state IN (5, 26, 27, 30)
+            AND YEAR(ord.ddw_order_date) = ?
+        GROUP BY YEAR(ord.ddw_order_date)
+        ORDER BY year DESC
+    `;
+
+    return connect(query, [year]);
+}
+
 
 
 
@@ -234,5 +249,6 @@ module.exports = {
     getProductosSinFoto,
     getProductsSinCategoria,
     getInfoSeller,
-    getTotales
+    getTotales,
+    getClientesEntregadosPorAnyo
 }
