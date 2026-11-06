@@ -236,7 +236,13 @@ const getClientesEntregadosPorAnyo = async () => {
         ORDER BY anio DESC
     `;
 
-    return connect(query);
+    const results = await connect(query);
+    return results.map(row => Object.fromEntries(
+        Object.entries(row).map(([key, value]) => [
+            key,
+            typeof value === 'bigint' ? value.toString() : value
+        ])
+    ));
 }
 
 
