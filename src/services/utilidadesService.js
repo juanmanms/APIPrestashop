@@ -223,19 +223,20 @@ const getTotales = async (year) => {
     return serializedResults;
 }
 
-const getClientesEntregadosPorAnyo = async (year) => {
+const getClientesEntregadosPorAnyo = async () => {
     const query = `
         SELECT
-            YEAR(ord.ddw_order_date) AS year,
-            COUNT(DISTINCT ord.id_customer) AS clientes
-        FROM ps_orders ord
-        WHERE ord.current_state IN (5, 26, 27, 30)
-            AND YEAR(ord.ddw_order_date) = ?
-        GROUP BY YEAR(ord.ddw_order_date)
-        ORDER BY year DESC
+            YEAR(o.date_upd) AS anio,
+            COUNT(DISTINCT o.id_customer) AS clientes_con_pedido,
+            COUNT(*) AS numero_de_pedidos,
+            ROUND(SUM(o.total_paid_tax_incl), 2) AS importe_de_pedidos
+        FROM ps_orders o
+        WHERE o.current_state IN (5, 26, 27, 30)
+        GROUP BY YEAR(o.date_upd)
+        ORDER BY anio DESC
     `;
 
-    return connect(query, [year]);
+    return connect(query);
 }
 
 

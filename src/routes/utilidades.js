@@ -93,14 +93,9 @@ router.get('/totales-repartos/:year', async (req, res) => {
     }
 });
 
-router.get('/clientes-entregados-por-ano/:year', async (req, res) => {
-    const { year } = req.params;
-    if (!/^\d{4}$/.test(year)) {
-        return res.status(400).json({ error: "El año debe tener cuatro dígitos" });
-    }
-
+router.get('/clientes-entregados-por-ano', async (req, res) => {
     try {
-        const clientes = await getClientesEntregadosPorAnyo(year);
+        const clientes = await getClientesEntregadosPorAnyo();
         res.json(clientes);
     } catch (error) {
         console.log(error);
