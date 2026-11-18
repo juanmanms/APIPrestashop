@@ -594,6 +594,7 @@ const getRepartosFuturo = async () => {
     const query = `
     SELECT 
     DATE_FORMAT(DATE(ord.ddw_order_date), '%d/%m/%Y') AS 'FechaEntrega',
+    GROUP_CONCAT(DISTINCT DATE_FORMAT(ord.ddw_order_date, '%H:%i:%s') ORDER BY TIME(ord.ddw_order_date) SEPARATOR ', ') AS 'HoraEntrega',
     c.id_customer,
     CONCAT(c.firstname, ' ', c.lastname) AS 'Cliente',
     CONCAT(d.address1, ' ', IF(d.address2 IS NOT NULL AND d.address2 != '', CONCAT(' ', d.address2), '')) AS 'Direccion',
@@ -668,6 +669,7 @@ const getPedidosRepartoFuturo = async (customer) => {
     ord.id_order AS 'IDPedido',
     ord.current_state AS 'Estado',
     DATE_FORMAT(ord.ddw_order_date, '%d/%m/%Y') AS 'FechaPedido',
+    DATE_FORMAT(ord.ddw_order_date, '%H:%i:%s') AS 'HoraEntrega',
     CONCAT(c.firstname, ' ', c.lastname) AS 'Cliente',
     CONCAT(d.address1, ' ', IF(d.address2 IS NOT NULL AND d.address2 != '', CONCAT(' ', d.address2), '')) AS 'Dirección',
     d.postcode AS 'CP',
